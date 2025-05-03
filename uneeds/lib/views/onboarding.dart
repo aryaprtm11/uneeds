@@ -91,7 +91,6 @@ class _OnboardingViewState extends State<OnboardingView> {
                 padding: const EdgeInsets.symmetric(vertical: 30),
                 child: Wrap(
                   spacing: 6,
-                  // mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
                       decoration: BoxDecoration(
@@ -99,7 +98,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       height: 8,
-                      width: 8,
+                      width: 20,
                     ),
 
                     Container(
