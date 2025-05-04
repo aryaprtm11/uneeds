@@ -102,7 +102,9 @@ class _OnboardingViewState extends State<OnboardingView> {
                 child: Wrap(
                   spacing: 6,
                   children: [
-                    Container(
+                    AnimatedContainer(
+                      duration: Duration(milliseconds: 200),
+                      curve: Curves.easeInOut,
                       decoration: BoxDecoration(
                         color: currentPage == 0 ? blueColor : fontGrayColor,
                         borderRadius: BorderRadius.circular(8),
@@ -111,7 +113,9 @@ class _OnboardingViewState extends State<OnboardingView> {
                       width: currentPage == 0 ? 20 : 8,
                     ),
 
-                    Container(
+                    AnimatedContainer(
+                      duration: Duration(milliseconds: 200),
+                      curve: Curves.easeInOut,
                       decoration: BoxDecoration(
                         color: currentPage == 1 ? blueColor : fontGrayColor,
                         borderRadius: BorderRadius.circular(8),
@@ -120,7 +124,9 @@ class _OnboardingViewState extends State<OnboardingView> {
                       width: currentPage == 1 ? 20 : 8,
                     ),
 
-                    Container(
+                    AnimatedContainer(
+                      duration: Duration(milliseconds: 200),
+                      curve: Curves.easeInOut,
                       decoration: BoxDecoration(
                         color: currentPage == 2 ? blueColor : fontGrayColor,
                         borderRadius: BorderRadius.circular(8),
@@ -135,6 +141,11 @@ class _OnboardingViewState extends State<OnboardingView> {
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 child: GestureDetector(
                   onTap: () {
+                    pageController.animateToPage(
+                      currentPage + 1,
+                      duration: Duration(milliseconds: 200),
+                      curve: Curves.easeInOut,
+                    );
                     // print("lanjut");
                   },
                   child: Container(
@@ -145,7 +156,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      "Lanjut",
+                      currentPage == 2 ? "Mulai" : "Lanjut",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: "InterSemiBold",
@@ -156,32 +167,38 @@ class _OnboardingViewState extends State<OnboardingView> {
                   ),
                 ),
               ),
-
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: GestureDetector(
-                  onTap: () {
-                    // print("lewati");
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.symmetric(vertical: 13.5),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      "Lewati",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: "InterSemiBold",
-                        fontSize: 14,
-                        color: blueColor,
+              currentPage == 2
+                  ? SizedBox(height: 47)
+                  : Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: GestureDetector(
+                      onTap: () {
+                        pageController.animateToPage(
+                          2,
+                          duration: Duration(milliseconds: 200),
+                          curve: Curves.easeInOut,
+                        );
+                        // print("lewati");
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(vertical: 13.5),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          "Lewati",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: "InterSemiBold",
+                            fontSize: 14,
+                            color: blueColor,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
             ],
           ),
         ],
