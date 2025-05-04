@@ -49,6 +49,7 @@ class _OnboardingViewState extends State<OnboardingView> {
               itemCount: onboardingData.length,
               itemBuilder: (_, i) {
                 return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(bottom: 20.0),
