@@ -30,6 +30,8 @@ class OnboardingView extends StatefulWidget {
 }
 
 class _OnboardingViewState extends State<OnboardingView> {
+  final PageController pageController = PageController();
+  int currentPage = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,6 +39,13 @@ class _OnboardingViewState extends State<OnboardingView> {
         children: [
           Expanded(
             child: PageView.builder(
+              controller: pageController,
+              onPageChanged: (V) {
+                // print(V.toString());
+                setState(() {
+                  currentPage = V;
+                });
+              },
               itemCount: onboardingData.length,
               itemBuilder: (_, i) {
                 return Column(
@@ -94,29 +103,29 @@ class _OnboardingViewState extends State<OnboardingView> {
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: blueColor,
+                        color: currentPage == 0 ? blueColor : fontGrayColor,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       height: 8,
-                      width: 20,
+                      width: currentPage == 0 ? 20 : 8,
                     ),
 
                     Container(
                       decoration: BoxDecoration(
-                        color: fontGrayColor,
+                        color: currentPage == 1 ? blueColor : fontGrayColor,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       height: 8,
-                      width: 8,
+                      width: currentPage == 1 ? 20 : 8,
                     ),
 
                     Container(
                       decoration: BoxDecoration(
-                        color: fontGrayColor,
+                        color: currentPage == 2 ? blueColor : fontGrayColor,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       height: 8,
-                      width: 8,
+                      width: currentPage == 2 ? 20 : 8,
                     ),
                   ],
                 ),
