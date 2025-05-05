@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uneeds/utils/color.dart';
+import 'package:uneeds/views/welcome.dart';
 
 List onboardingData = [
   {
@@ -41,7 +42,7 @@ class _OnboardingViewState extends State<OnboardingView> {
             child: PageView.builder(
               controller: pageController,
               onPageChanged: (V) {
-                // print(V.toString());
+                print(V.toString());
                 setState(() {
                   currentPage = V;
                 });
@@ -141,11 +142,20 @@ class _OnboardingViewState extends State<OnboardingView> {
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 child: GestureDetector(
                   onTap: () {
-                    pageController.animateToPage(
-                      currentPage + 1,
-                      duration: Duration(milliseconds: 200),
-                      curve: Curves.easeInOut,
-                    );
+                    if (currentPage == 2) {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder:
+                              (BuildContext context) => const WelcomeView(),
+                        ),
+                      );
+                    } else {
+                      pageController.animateToPage(
+                        currentPage + 1,
+                        duration: Duration(milliseconds: 200),
+                        curve: Curves.easeInOut,
+                      );
+                    }
                     // print("lanjut");
                   },
                   child: Container(
