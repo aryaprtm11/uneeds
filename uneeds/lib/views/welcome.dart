@@ -22,7 +22,7 @@ class _WelcomeViewState extends State<WelcomeView> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 20),
                   child: Text(
-                    "Sign-in",
+                    "Siap Untuk Menjadi\nLebih Fokus?",
                     textAlign: TextAlign.center,
                     style: TextStyle(fontFamily: "InterBold", fontSize: 24),
                   ),
@@ -45,8 +45,34 @@ class _WelcomeViewState extends State<WelcomeView> {
           ),
 
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 55),
+            padding: const EdgeInsets.fromLTRB(55, 0, 55, 78),
             child: Image.asset('assets/gambar/login.png'),
+          ),
+
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: GestureDetector(
+              onTap: () {
+                // print("lanjut");
+              },
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 13.5),
+                decoration: BoxDecoration(
+                  color: blueColor,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  "Masuk",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: "InterSemiBold",
+                    fontSize: 14,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
