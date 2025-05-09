@@ -45,32 +45,42 @@ class _WelcomeViewState extends State<WelcomeView> {
           ),
 
           Padding(
-            padding: const EdgeInsets.fromLTRB(55, 0, 55, 78),
+            padding: const EdgeInsets.fromLTRB(55, 0, 55, 55),
             child: Image.asset('assets/gambar/login.png'),
           ),
 
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: GestureDetector(
-              onTap: () {
-                // print("lanjut");
-              },
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 13.5),
-                decoration: BoxDecoration(
-                  color: blueColor,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  "Masuk",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: "InterSemiBold",
-                    fontSize: 14,
-                    color: Colors.white,
+          GestureDetector(
+            onTap: () {
+              // Tambahkan logika login Google di sini
+            },
+            child: Container(
+              width: double.infinity,
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: btnColor,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade300, width: 2),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    "assets/gambar/google.png",
+                    width: 20,
+                    height: 20,
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    "Masuk Dengan Google",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
