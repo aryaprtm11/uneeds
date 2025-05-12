@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "955383899351",
+    "project_id": "uneeds-signin",
+    "storage_bucket": "uneeds-signin.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:955383899351:android:eb664f1495825844453c92",
+        "android_client_info": {
+          "package_name": "com.example.uneeds"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "955383899351-31jp9ghd0at7nr1ota4qhl3fepcih5bp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCmSnK_HWLZjaI2ADOkcKYr9WMXzqCfnGs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "955383899351-31jp9ghd0at7nr1ota4qhl3fepcih5bp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

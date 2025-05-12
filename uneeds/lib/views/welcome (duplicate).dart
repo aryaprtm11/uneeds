@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:uneeds/utils/color.dart';
-import 'home_page.dart';
 
 class WelcomeView extends StatefulWidget {
   const WelcomeView({super.key});
@@ -26,11 +25,6 @@ class _WelcomeViewState extends State<WelcomeView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: _user != null ? HomePage() : _welcomeView());
-  }
-
-  // Welcome View and Sign In if user is not signed in
-  Widget _welcomeView() {
     return Scaffold(
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -107,15 +101,5 @@ class _WelcomeViewState extends State<WelcomeView> {
         ],
       ),
     );
-  }
-
-  // Handle Google Sign In
-  void _handleGoogleSignIn() {
-    try {
-      GoogleAuthProvider _googleAuthProvider = GoogleAuthProvider();
-      _auth.signInWithProvider(_googleAuthProvider);
-    } catch (error) {
-      print(error);
-    }
   }
 }
