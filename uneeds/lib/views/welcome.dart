@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:uneeds/utils/color.dart';
 import 'home_page.dart';
 
@@ -11,8 +12,9 @@ class WelcomeView extends StatefulWidget {
 }
 
 class _WelcomeViewState extends State<WelcomeView> {
-  // Firebase Auth Intialization
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   User? _user;
 
@@ -20,7 +22,9 @@ class _WelcomeViewState extends State<WelcomeView> {
   void initState() {
     super.initState();
     _auth.authStateChanges().listen((event) {
-      _user = event;
+      setState(() {
+        _user = event;
+      });
     });
   }
 
@@ -29,7 +33,6 @@ class _WelcomeViewState extends State<WelcomeView> {
     return Scaffold(body: _user != null ? HomePage() : _welcomeView());
   }
 
-  // Welcome View and Sign In if user is not signed in
   Widget _welcomeView() {
     return Scaffold(
       body: Column(
@@ -47,7 +50,6 @@ class _WelcomeViewState extends State<WelcomeView> {
                     style: TextStyle(fontFamily: "InterBold", fontSize: 24),
                   ),
                 ),
-
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
@@ -63,15 +65,13 @@ class _WelcomeViewState extends State<WelcomeView> {
               ],
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.fromLTRB(55, 0, 55, 55),
             child: Image.asset('assets/gambar/login.png'),
           ),
-
           GestureDetector(
             onTap: () {
-              // Google Sign In
+              _handleGoogleSignIn();
             },
             child: Container(
               width: double.infinity,
@@ -109,13 +109,29 @@ class _WelcomeViewState extends State<WelcomeView> {
     );
   }
 
-  // Handle Google Sign In
-  void _handleGoogleSignIn() {
+  // Handle Google Sign-In
+  Future<void> _handleGoogleSignIn() async {
     try {
-      GoogleAuthProvider _googleAuthProvider = GoogleAuthProvider();
-      _auth.signInWithProvider(_googleAuthProvider);
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        print("Login dibatalkan");
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await _auth.signInWithCredential(credential);
     } catch (error) {
-      print(error);
+      print("Google Sign-In Error: $error");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Gagal masuk: $error")));
     }
   }
 }
