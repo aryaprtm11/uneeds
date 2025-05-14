@@ -13,7 +13,6 @@ class WelcomeView extends StatefulWidget {
 
 class _WelcomeViewState extends State<WelcomeView> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   User? _user;
@@ -112,26 +111,31 @@ class _WelcomeViewState extends State<WelcomeView> {
   // Handle Google Sign-In
   Future<void> _handleGoogleSignIn() async {
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        print("Login dibatalkan");
+      print("Memulai proses Google Sign-In...");
+
+      final user = await _googleSignIn.signIn();
+
+      if (user == null) {
+        print("Login dibatalkan oleh pengguna.");
         return;
       }
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      print("Google user: ${user.email}");
+
+      GoogleSignInAuthentication googleAuth = await user.authentication;
 
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
+        accessToken: googleAuth.accessToken,
       );
 
-      await _auth.signInWithCredential(credential);
+      UserCredential userCredential = await _auth.signInWithCredential(
+        credential,
+      );
+
+      print("Login berhasil: ${userCredential.user?.displayName}");
     } catch (error) {
-      print("Google Sign-In Error: $error");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Gagal masuk: $error")));
+      print("Login error: $error");
     }
   }
 }
