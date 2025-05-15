@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.uneeds"
+    namespace = "com.example.uneeds.v2"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
     ndkVersion = "29.0.13113456"
@@ -25,7 +25,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.uneeds"
+        applicationId = "com.example.uneeds.v2"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 23
@@ -33,6 +33,8 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         
+        // Tambahkan multidex support
+        multiDexEnabled = true
     }
     
 
@@ -47,4 +49,10 @@ android {
 
 flutter {
     source = "../.."
+}
+
+// Tambahkan dependencies tambahan yang dibutuhkan
+dependencies {
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("androidx.multidex:multidex:2.0.1")
 }

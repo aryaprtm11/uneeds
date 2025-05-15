@@ -1,33 +1,49 @@
 {
   "project_info": {
-    "project_number": "955383899351",
-    "project_id": "uneeds-signin",
-    "storage_bucket": "uneeds-signin.firebasestorage.app"
+    "project_number": "498846061623",
+    "project_id": "uneeds-authentication",
+    "storage_bucket": "uneeds-authentication.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:955383899351:android:eb664f1495825844453c92",
+        "mobilesdk_app_id": "1:498846061623:android:e5d53993f7ca1900fb9bb2",
         "android_client_info": {
-          "package_name": "com.example.uneeds"
+          "package_name": "com.example.uneeds.v2"
         }
       },
       "oauth_client": [
         {
-          "client_id": "955383899351-31jp9ghd0at7nr1ota4qhl3fepcih5bp.apps.googleusercontent.com",
+          "client_id": "498846061623-dk8s70uqc7oo9fe2k8tva29q16ep1r3m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.uneeds.v2",
+            "certificate_hash": "c1487fe26d08036d1e63c14e7e3251db21102b08"
+          }
+        },
+        {
+          "client_id": "498846061623-us5nl8gg9avvkjk67uto5uthsm0qkjvo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.uneeds.v2",
+            "certificate_hash": "49989d9cb24654b8f954f98eedf8eccf4eaa8766"
+          }
+        },
+        {
+          "client_id": "498846061623-23r7u796rjoequf6j3925v7q4gb2v7mv.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCmSnK_HWLZjaI2ADOkcKYr9WMXzqCfnGs"
+          "current_key": "AIzaSyC9wf0M-45O3KOSSX-LLU5D6g8MGEQHgXY"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "955383899351-31jp9ghd0at7nr1ota4qhl3fepcih5bp.apps.googleusercontent.com",
+              "client_id": "498846061623-23r7u796rjoequf6j3925v7q4gb2v7mv.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
