@@ -148,8 +148,8 @@ class _WelcomeViewState extends State<WelcomeView> {
       print("Access Token diperoleh: ${googleAuth.accessToken != null ? 'Ya' : 'Tidak'}");
 
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
+        accessToken: googleAuth.accessToken,
       );
 
       print("Mencoba login ke Firebase dengan credential");
