@@ -229,8 +229,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          
-                    SizedBox(height: 20), // Spacing di bawah navbar
+          SizedBox(height: 25),
         ],
       ),
     );

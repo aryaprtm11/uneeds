@@ -1,12 +1,8 @@
-<<<<<<< HEAD
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Tambahkan izin internet -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     
-=======
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" >
->>>>>>> 49714f00b3c3f37f37b5bc6ece47ac720032d2f6
     <application
         android:label="uneeds"
         android:name="${applicationName}"
