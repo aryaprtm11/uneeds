@@ -3,136 +3,438 @@ import 'package:uneeds/utils/color.dart';
 import 'package:uneeds/views/home_page.dart';
 import 'package:uneeds/views/note_page.dart';
 import 'package:uneeds/views/target_page.dart';
+import 'package:uneeds/views/add_schedule.dart';
 
 class SchedulePage extends StatelessWidget {
-  const SchedulePage({Key? key}) : super(key: key);
+  const SchedulePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     
     return Scaffold(
-      backgroundColor: Color(0xFFE6F2FD),
+      backgroundColor: const Color(0xFFF5F9FF),
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          // Navbar dan tombol plus
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Container navbar utama
-              Container(
-                width: screenWidth * 0.65,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    // Home button
-                    InkWell(
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) => HomePage(),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
+          Expanded(
+            child: SafeArea(
+              bottom: false,
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Jadwal\nKuliah',
+                            style: TextStyle(
+                              fontSize: 40,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF2B4865),
+                              height: 1.1,
+                            ),
                           ),
-                        );
-                      },
-                      child: Container(
+                          Container(
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2B4865),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const AddSchedulePage(),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.add_circle_outline,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                              label: const Text(
+                                'Tambah Jadwal',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2B4865),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _dayButton('S', true),
+                            _dayButton('S', false),
+                            _dayButton('R', false),
+                            _dayButton('K', false),
+                            _dayButton('J', false),
+                            _dayButton('S', false),
+                            _dayButton('M', false),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2B4865),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Senin',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            _scheduleTimeRow(
+                              '07.00 AM',
+                              _scheduleCard(
+                                'Kewirausahaan',
+                                'Pak Aldi',
+                                '07.00 AM - 08.30 AM',
+                                'GK-213',
+                              ),
+                            ),
+                            _scheduleTimeRow(
+                              '09.00 AM',
+                              _scheduleCard(
+                                'Machine Learning',
+                                'Pak Andika',
+                                '09.00 AM - 11.00 AM',
+                                'GK-223',
+                              ),
+                            ),
+                            _scheduleTimeRow(
+                              '09.00 AM',
+                              _scheduleCard(
+                                'Machine Learning',
+                                'Pak Andika',
+                                '09.00 AM - 11.00 AM',
+                                'GK-223',
+                              ),
+                            ),
+                            _scheduleTimeRow(
+                              '09.00 AM',
+                              _scheduleCard(
+                                'Machine Learning',
+                                'Pak Andika',
+                                '09.00 AM - 11.00 AM',
+                                'GK-223',
+                                isLast: true,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // Navbar dan tombol plus
+          Container(
+            padding: const EdgeInsets.only(top: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: screenWidth * 0.65,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(40),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Home button
+                      InkWell(
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation, secondaryAnimation) => HomePage(),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.home_rounded,
+                            color: primaryBlueColor,
+                            size: 30,
+                          ),
+                        ),
+                      ),
+                      
+                      // Calendar button (active)
+                      Container(
                         width: 50,
                         height: 50,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: primaryBlueColor,
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(
-                          Icons.home_rounded,
-                          color: primaryBlueColor,
+                        child: const Icon(
+                          Icons.calendar_today_rounded,
+                          color: Colors.white,
                           size: 30,
                         ),
                       ),
-                    ),
-                    
-                    // Calendar button (active)
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: primaryBlueColor,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.calendar_today_rounded,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                    ),
-                    
-                    // List button
-                    InkWell(
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) => NotePage(),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
+                      
+                      // List button
+                      InkWell(
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation, secondaryAnimation) => NotePage(),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
                           ),
-                        );
-                      },
-                      child: Icon(
-                        Icons.view_list_rounded,
-                        color: primaryBlueColor,
-                        size: 30,
-                      ),
-                    ),
-                    
-                    // Molecule/Api button
-                    InkWell(
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) => TargetPage(),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
+                          child: Icon(
+                            Icons.view_list_rounded,
+                            color: primaryBlueColor,
+                            size: 30,
                           ),
-                        );
-                      },
-                      child: Icon(
-                        Icons.api_rounded,
-                        color: primaryBlueColor,
-                        size: 30,
+                        ),
                       ),
-                    ),
-                  ],
+                      
+                      // Molecule/Api button
+                      InkWell(
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation, secondaryAnimation) => TargetPage(),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.api_rounded,
+                            color: primaryBlueColor,
+                            size: 30,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              
-              // Plus button (diluar navbar)
-              Container(
-                width: 50,
-                height: 50,
-                margin: EdgeInsets.only(left: 10),
-                decoration: BoxDecoration(
-                  color: primaryBlueColor,
-                  shape: BoxShape.circle,
+                // Plus button (diluar navbar)
+                Container(
+                  width: 50,
+                  height: 50,
+                  margin: const EdgeInsets.only(left: 10),
+                  decoration: BoxDecoration(
+                    color: primaryBlueColor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.add,
+                    color: Colors.white,
+                    size: 30,
+                  ),
                 ),
-                child: Icon(
-                  Icons.add,
-                  color: Colors.white,
-                  size: 30,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-          
-          SizedBox(height: 25),
+          const SizedBox(height: 55),
+        ],
+      ),
+    );
+  }
+
+  Widget _dayButton(String day, bool isSelected) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: isSelected ? Colors.white : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: !isSelected ? Border.all(color: Colors.white, width: 1) : null,
+      ),
+      child: Center(
+        child: Text(
+          day,
+          style: TextStyle(
+            color: isSelected ? const Color(0xFF2B4865) : Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _scheduleTimeRow(String time, Widget card) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              time,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Expanded(
+              child: Container(
+                height: 1,
+                color: Colors.white.withOpacity(0.5),
+                margin: const EdgeInsets.only(left: 12),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.only(left: 85),
+          child: card,
+        ),
+      ],
+    );
+  }
+
+  Widget _scheduleCard(
+    String subject,
+    String lecturer,
+    String duration,
+    String room,
+    {bool isLast = false}
+  ) {
+    return Container(
+      margin: EdgeInsets.only(bottom: isLast ? 0 : 24),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFF4A7B97).withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.video_camera_front_rounded,
+              color: Color(0xFF4A7B97),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  subject,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2B4865),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Dosen : $lecturer',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                ),
+                Text(
+                  duration,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                ),
+                Text(
+                  room,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: const Color(0xFF2B4865),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.edit_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
         ],
       ),
     );

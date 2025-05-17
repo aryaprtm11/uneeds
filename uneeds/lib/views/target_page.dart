@@ -5,7 +5,7 @@ import 'package:uneeds/views/schedule_page.dart';
 import 'package:uneeds/views/note_page.dart';
 
 class TargetPage extends StatelessWidget {
-  const TargetPage({Key? key}) : super(key: key);
+  const TargetPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +150,7 @@ class TargetPage extends StatelessWidget {
                   ],
                 ),
                 
-                SizedBox(height: 25),
+                SizedBox(height: 55),
               ],
             ),
           ),
