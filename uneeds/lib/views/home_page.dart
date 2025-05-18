@@ -4,6 +4,7 @@ import 'package:uneeds/utils/color.dart';
 import 'package:uneeds/views/schedule_page.dart';
 import 'package:uneeds/views/note_page.dart';
 import 'package:uneeds/views/target_page.dart';
+import 'package:uneeds/views/notification_page.dart';
 
 class HomePage extends StatefulWidget {
   final User? user;
@@ -96,14 +97,24 @@ class _HomePageState extends State<HomePage> {
                 ),
                 Row(
                   children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xFF1F4D70),
-                        shape: BoxShape.circle,
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const NotificationPage(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Color(0xFF1F4D70),
+                          shape: BoxShape.circle,
+                        ),
+                        padding: EdgeInsets.all(8),
+                        margin: EdgeInsets.only(right: 10),
+                        child: Icon(Icons.notifications, color: Colors.white),
                       ),
-                      padding: EdgeInsets.all(8),
-                      margin: EdgeInsets.only(right: 10),
-                      child: Icon(Icons.notifications, color: Colors.white),
                     ),
                     Container(
                       decoration: BoxDecoration(
