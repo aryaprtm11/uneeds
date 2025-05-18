@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:uneeds/models/jadwal.dart';
+import 'package:uneeds/services/database_service.dart';
 import 'package:uneeds/utils/color.dart';
 import 'package:uneeds/views/home_page.dart';
 import 'package:uneeds/views/note_page.dart';
 import 'package:uneeds/views/target_page.dart';
 import 'package:uneeds/views/add_schedule.dart';
 
-class SchedulePage extends StatelessWidget {
+class SchedulePage extends StatefulWidget {
   const SchedulePage({super.key});
+
+  @override
+  State<SchedulePage> createState() => _SchedulePageState();
+}
+
+class _SchedulePageState extends State<SchedulePage> {
+  final DatabaseService _databaseService = DatabaseService.instance;
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9FF),
       body: Column(
@@ -48,7 +57,8 @@ class SchedulePage extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const AddSchedulePage(),
+                                    builder:
+                                        (context) => const AddSchedulePage(),
                                   ),
                                 );
                               },
@@ -68,7 +78,9 @@ class SchedulePage extends StatelessWidget {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.transparent,
                                 elevation: 0,
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -99,61 +111,62 @@ class SchedulePage extends StatelessWidget {
                       ),
                       const SizedBox(height: 24),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 20,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF2B4865),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Senin',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            _scheduleTimeRow(
-                              '07.00 AM',
-                              _scheduleCard(
-                                'Kewirausahaan',
-                                'Pak Aldi',
-                                '07.00 AM - 08.30 AM',
-                                'GK-213',
-                              ),
-                            ),
-                            _scheduleTimeRow(
-                              '09.00 AM',
-                              _scheduleCard(
-                                'Machine Learning',
-                                'Pak Andika',
-                                '09.00 AM - 11.00 AM',
-                                'GK-223',
-                              ),
-                            ),
-                            _scheduleTimeRow(
-                              '09.00 AM',
-                              _scheduleCard(
-                                'Machine Learning',
-                                'Pak Andika',
-                                '09.00 AM - 11.00 AM',
-                                'GK-223',
-                              ),
-                            ),
-                            _scheduleTimeRow(
-                              '09.00 AM',
-                              _scheduleCard(
-                                'Machine Learning',
-                                'Pak Andika',
-                                '09.00 AM - 11.00 AM',
-                                'GK-223',
-                                isLast: true,
-                              ),
-                            ),
-                          ],
+                        child: FutureBuilder<List<Jadwal>?>(
+                          future: _databaseService.getJadwal(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            } else if (snapshot.hasError) {
+                              return Center(
+                                child: Text('Error: \${snapshot.error}'),
+                              );
+                            } else if (snapshot.hasData &&
+                                snapshot.data!.isNotEmpty) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Senin',
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  ...snapshot.data!.map(
+                                    (jadwal) => _scheduleTimeRow(
+                                      jadwal.waktuMulai,
+                                      _scheduleCard(
+                                        jadwal.matkul,
+                                        jadwal.dosen,
+                                        "${jadwal.waktuMulai} - ${jadwal.waktuSelesai}",
+                                        jadwal.ruangan,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            } else {
+                              return const Center(
+                                child: Text(
+                                  'Tidak ada jadwal.',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              );
+                            }
+                          },
                         ),
                       ),
                     ],
@@ -162,7 +175,6 @@ class SchedulePage extends StatelessWidget {
               ),
             ),
           ),
-          // Navbar dan tombol plus
           Container(
             padding: const EdgeInsets.only(top: 8),
             child: Row(
@@ -178,105 +190,23 @@ class SchedulePage extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      // Home button
-                      InkWell(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) => HomePage(),
-                              transitionDuration: Duration.zero,
-                              reverseTransitionDuration: Duration.zero,
-                            ),
-                          );
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.home_rounded,
-                            color: primaryBlueColor,
-                            size: 30,
-                          ),
-                        ),
+                      _navIcon(context, Icons.home_rounded, HomePage(), false),
+                      _navIcon(
+                        context,
+                        Icons.calendar_today_rounded,
+                        SchedulePage(),
+                        true,
                       ),
-                      
-                      // Calendar button (active)
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: primaryBlueColor,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.calendar_today_rounded,
-                          color: Colors.white,
-                          size: 30,
-                        ),
+                      _navIcon(
+                        context,
+                        Icons.view_list_rounded,
+                        NotePage(),
+                        false,
                       ),
-                      
-                      // List button
-                      InkWell(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) => NotePage(),
-                              transitionDuration: Duration.zero,
-                              reverseTransitionDuration: Duration.zero,
-                            ),
-                          );
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.view_list_rounded,
-                            color: primaryBlueColor,
-                            size: 30,
-                          ),
-                        ),
-                      ),
-                      
-                      // Molecule/Api button
-                      InkWell(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) => TargetPage(),
-                              transitionDuration: Duration.zero,
-                              reverseTransitionDuration: Duration.zero,
-                            ),
-                          );
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.api_rounded,
-                            color: primaryBlueColor,
-                            size: 30,
-                          ),
-                        ),
-                      ),
+                      _navIcon(context, Icons.api_rounded, TargetPage(), false),
                     ],
                   ),
                 ),
-                // Plus button (diluar navbar)
                 Container(
                   width: 50,
                   height: 50,
@@ -285,11 +215,7 @@ class SchedulePage extends StatelessWidget {
                     color: primaryBlueColor,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.add,
-                    color: Colors.white,
-                    size: 30,
-                  ),
+                  child: const Icon(Icons.add, color: Colors.white, size: 30),
                 ),
               ],
             ),
@@ -300,143 +226,156 @@ class SchedulePage extends StatelessWidget {
     );
   }
 
-  Widget _dayButton(String day, bool isSelected) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: isSelected ? Colors.white : Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
-        border: !isSelected ? Border.all(color: Colors.white, width: 1) : null,
-      ),
-      child: Center(
-        child: Text(
-          day,
-          style: TextStyle(
-            color: isSelected ? const Color(0xFF2B4865) : Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+  Widget _dayButton(String day, bool isSelected) => Container(
+    width: 40,
+    height: 40,
+    decoration: BoxDecoration(
+      color: isSelected ? Colors.white : Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      border: !isSelected ? Border.all(color: Colors.white, width: 1) : null,
+    ),
+    child: Center(
+      child: Text(
+        day,
+        style: TextStyle(
+          color: isSelected ? const Color(0xFF2B4865) : Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
         ),
       ),
-    );
-  }
+    ),
+  );
 
-  Widget _scheduleTimeRow(String time, Widget card) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              time,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+  Widget _scheduleTimeRow(String time, Widget card) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          Text(
+            time,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
             ),
-            Expanded(
-              child: Container(
-                height: 1,
-                color: Colors.white.withOpacity(0.5),
-                margin: const EdgeInsets.only(left: 12),
-              ),
+          ),
+          Expanded(
+            child: Container(
+              height: 1,
+              color: Colors.white.withOpacity(0.5),
+              margin: const EdgeInsets.only(left: 12),
             ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Padding(
-          padding: const EdgeInsets.only(left: 85),
-          child: card,
-        ),
-      ],
-    );
-  }
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      Padding(padding: const EdgeInsets.only(left: 85), child: card),
+    ],
+  );
 
   Widget _scheduleCard(
     String subject,
     String lecturer,
     String duration,
-    String room,
-    {bool isLast = false}
+    String room, {
+    bool isLast = false,
+  }) => Container(
+    margin: EdgeInsets.only(bottom: isLast ? 0 : 24),
+    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+    width: double.infinity,
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: const Color(0xFF4A7B97).withOpacity(0.2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(
+            Icons.video_camera_front_rounded,
+            color: Color(0xFF4A7B97),
+            size: 24,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                subject,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF2B4865),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "Dosen: $lecturer",
+                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              ),
+              Text(
+                duration,
+                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              ),
+              Text(
+                room,
+                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: const Color(0xFF2B4865),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.edit_rounded, color: Colors.white, size: 18),
+        ),
+      ],
+    ),
+  );
+
+  Widget _navIcon(
+    BuildContext context,
+    IconData icon,
+    Widget page,
+    bool isActive,
   ) {
-    return Container(
-      margin: EdgeInsets.only(bottom: isLast ? 0 : 24),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: const Color(0xFF4A7B97).withOpacity(0.2),
-              borderRadius: BorderRadius.circular(8),
+    return InkWell(
+      onTap: () {
+        if (!isActive) {
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => page,
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
             ),
-            child: const Icon(
-              Icons.video_camera_front_rounded,
-              color: Color(0xFF4A7B97),
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  subject,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2B4865),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Dosen : $lecturer',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-                Text(
-                  duration,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-                Text(
-                  room,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2B4865),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.edit_rounded,
-              color: Colors.white,
-              size: 18,
-            ),
-          ),
-        ],
+          );
+        }
+      },
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: isActive ? primaryBlueColor : Colors.white,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          icon,
+          color: isActive ? Colors.white : primaryBlueColor,
+          size: 30,
+        ),
       ),
     );
   }
-} 
+}

@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+// Toast
+import 'package:fluttertoast/fluttertoast.dart';
+
+// Database
+import 'package:uneeds/services/database_service.dart';
+
 class AddSchedulePage extends StatefulWidget {
   const AddSchedulePage({super.key});
 
@@ -8,18 +14,31 @@ class AddSchedulePage extends StatefulWidget {
 }
 
 class _AddSchedulePageState extends State<AddSchedulePage> {
+  // Database Instance
+  final DatabaseService _databaseService = DatabaseService.instance;
+
   final _formKey = GlobalKey<FormState>();
   String selectedDay = 'Senin';
   String selectedCategory = 'Wajib';
-  
-  // Controller untuk input teks
-  final TextEditingController _startHourController = TextEditingController(text: '00');
-  final TextEditingController _startMinuteController = TextEditingController(text: '00');
-  final TextEditingController _endHourController = TextEditingController(text: '00');
-  final TextEditingController _endMinuteController = TextEditingController(text: '00');
-  
-  bool isAM = true;
-  bool isAMEnd = true;
+
+  // Controller untuk input waktu
+  final TextEditingController _startHourController = TextEditingController(
+    text: '00',
+  );
+  final TextEditingController _startMinuteController = TextEditingController(
+    text: '00',
+  );
+  final TextEditingController _endHourController = TextEditingController(
+    text: '00',
+  );
+  final TextEditingController _endMinuteController = TextEditingController(
+    text: '00',
+  );
+
+  // Controller untuk input matkul,dosen,dan ruangan
+  final TextEditingController _matkulController = TextEditingController();
+  final TextEditingController _dosenController = TextEditingController();
+  final TextEditingController _ruanganController = TextEditingController();
 
   final List<String> _categories = ['Wajib', 'Pilihan', 'Praktikum'];
 
@@ -29,7 +48,21 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
     _startMinuteController.dispose();
     _endHourController.dispose();
     _endMinuteController.dispose();
+    _matkulController.dispose();
+    _dosenController.dispose();
+    _ruanganController.dispose();
     super.dispose();
+  }
+
+  // Memformat Waktu
+  String formatTime24(String hourText, String minuteText) {
+    int hour = int.tryParse(hourText) ?? 0;
+    int minute = int.tryParse(minuteText) ?? 0;
+
+    final hourStr = hour.toString().padLeft(2, '0');
+    final minuteStr = minute.toString().padLeft(2, '0');
+
+    return '$hourStr:$minuteStr';
   }
 
   @override
@@ -74,7 +107,7 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                
+
                 // Form Container
                 Expanded(
                   child: Container(
@@ -89,6 +122,7 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                         children: [
                           _buildInputLabel('Nama Mata Kuliah'),
                           _buildTextField(
+                            controller: _matkulController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Nama mata kuliah tidak boleh kosong';
@@ -97,9 +131,10 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                             },
                           ),
                           const SizedBox(height: 16),
-                          
+
                           _buildInputLabel('Dosen Pengampu'),
                           _buildTextField(
+                            controller: _dosenController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Nama dosen tidak boleh kosong';
@@ -108,9 +143,10 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                             },
                           ),
                           const SizedBox(height: 16),
-                          
+
                           _buildInputLabel('Ruangan Kelas'),
                           _buildTextField(
+                            controller: _ruanganController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Ruangan kelas tidak boleh kosong';
@@ -119,11 +155,19 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                             },
                           ),
                           const SizedBox(height: 16),
-                          
+
                           _buildInputLabel('Hari'),
                           _buildDropdownButton(
                             value: selectedDay,
-                            items: const ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
+                            items: const [
+                              'Senin',
+                              'Selasa',
+                              'Rabu',
+                              'Kamis',
+                              'Jumat',
+                              'Sabtu',
+                              'Minggu',
+                            ],
                             onChanged: (value) {
                               setState(() {
                                 selectedDay = value!;
@@ -131,7 +175,7 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                             },
                           ),
                           const SizedBox(height: 16),
-                          
+
                           // Time Selection
                           Row(
                             children: [
@@ -143,12 +187,6 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                                     _buildTimeInput(
                                       hourController: _startHourController,
                                       minuteController: _startMinuteController,
-                                      isAM: isAM,
-                                      onAMPMChanged: (value) {
-                                        setState(() {
-                                          isAM = value;
-                                        });
-                                      },
                                     ),
                                   ],
                                 ),
@@ -162,12 +200,6 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                                     _buildTimeInput(
                                       hourController: _endHourController,
                                       minuteController: _endMinuteController,
-                                      isAM: isAMEnd,
-                                      onAMPMChanged: (value) {
-                                        setState(() {
-                                          isAMEnd = value;
-                                        });
-                                      },
                                     ),
                                   ],
                                 ),
@@ -175,7 +207,7 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                             ],
                           ),
                           const SizedBox(height: 16),
-                          
+
                           _buildInputLabel('Kategori Jadwal'),
                           _buildDropdownButton(
                             value: selectedCategory,
@@ -192,7 +224,7 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Save Button
                 SizedBox(
                   width: double.infinity,
@@ -240,13 +272,18 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
 
   Widget _buildTextField({
     String? Function(String?)? validator,
+    required TextEditingController controller,
   }) {
     return TextFormField(
+      controller: controller,
       validator: validator,
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
@@ -279,12 +316,10 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
           isExpanded: true,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           borderRadius: BorderRadius.circular(8),
-          items: items.map((String item) {
-            return DropdownMenuItem<String>(
-              value: item,
-              child: Text(item),
-            );
-          }).toList(),
+          items:
+              items.map((String item) {
+                return DropdownMenuItem<String>(value: item, child: Text(item));
+              }).toList(),
           onChanged: onChanged,
         ),
       ),
@@ -294,8 +329,6 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
   Widget _buildTimeInput({
     required TextEditingController hourController,
     required TextEditingController minuteController,
-    required bool isAM,
-    required Function(bool) onAMPMChanged,
   }) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -323,21 +356,22 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
               contentPadding: EdgeInsets.symmetric(vertical: 8),
             ),
             validator: (value) {
-              if (value == null || value.isEmpty) return '';
+              if (value == null || value.isEmpty) return 'Jam harus diisi';
               final hour = int.tryParse(value);
-              if (hour == null || hour < 0 || hour > 23) return '';
+              if (hour == null || hour < 0 || hour > 23)
+                return 'Jam harus antara 0-23';
               return null;
             },
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8),
           child: Text(
             ':',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w500,
-              color: Colors.grey.shade400,
+              color: Colors.grey,
             ),
           ),
         ),
@@ -364,9 +398,10 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
               contentPadding: EdgeInsets.symmetric(vertical: 8),
             ),
             validator: (value) {
-              if (value == null || value.isEmpty) return '';
+              if (value == null || value.isEmpty) return 'Menit harus diisi';
               final minute = int.tryParse(value);
-              if (minute == null || minute < 0 || minute > 59) return '';
+              if (minute == null || minute < 0 || minute > 59)
+                return 'Menit harus antara 0-59';
               return null;
             },
           ),
@@ -375,10 +410,60 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
     );
   }
 
-  void _saveSchedule() {
+  Future<void> _saveSchedule() async {
+    // Tambahkan async jika addJadwal asinkron
     if (_formKey.currentState!.validate()) {
-      // TODO: Implement save schedule logic
-      Navigator.pop(context);
+      if (selectedCategory.isEmpty ||
+          selectedDay.isEmpty ||
+          _matkulController.text.isEmpty ||
+          _dosenController.text.isEmpty ||
+          _ruanganController.text.isEmpty) {
+        Fluttertoast.showToast(msg: 'Semua field harus diisi');
+        return;
+      }
+
+      final startTime = formatTime24(
+        _startHourController.text,
+        _startMinuteController.text,
+      );
+
+      final endTime = formatTime24(
+        _endHourController.text,
+        _endMinuteController.text,
+      );
+
+      // Tambahkan validasi waktu di sini jika diperlukan
+      if (startTime.compareTo(endTime) >= 0) {
+        Fluttertoast.showToast(msg: 'Waktu mulai harus sebelum waktu berakhir');
+        return;
+      }
+
+      try {
+        // Jika addJadwal mengembalikan Future, gunakan await
+        await _databaseService.addJadwal(
+          _matkulController.text,
+          _dosenController.text,
+          selectedDay,
+          _ruanganController.text,
+          startTime,
+          endTime,
+          selectedCategory,
+        );
+        Fluttertoast.showToast(msg: 'Jadwal berhasil disimpan');
+        setState(() {
+          _matkulController.clear();
+          _dosenController.clear();
+          _ruanganController.clear();
+          _startHourController.clear();
+          _startMinuteController.clear();
+          _endHourController.clear();
+          _endMinuteController.clear();
+        });
+        Navigator.pop(context);
+      } catch (e) {
+        Fluttertoast.showToast(msg: 'Terjadi kesalahan saat menyimpan jadwal');
+        print('Error saving schedule: $e'); // Log error untuk debugging
+      }
     }
   }
-} 
+}
