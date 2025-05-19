@@ -45,8 +45,6 @@ dependencies:
   fluttertoast: ^8.2.12
   path_provider: ^2.1.5
   image_picker: ^1.1.2
-  
-
 
 dev_dependencies:
   flutter_test:

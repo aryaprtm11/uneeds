@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uneeds/utils/color.dart';
-import 'package:uneeds/views/profile_page.dart';
+import 'package:uneeds/views/settings_page.dart';
 import 'package:uneeds/views/schedule_page.dart';
 import 'package:uneeds/views/note_page.dart';
 import 'package:uneeds/views/target_page.dart';
@@ -17,7 +17,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   User? user;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   String firstName = "";
 
   @override
@@ -122,7 +121,7 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const ProfilePage(),
+                            builder: (context) => const SettingPage(),
                           ),
                         );
                       },
