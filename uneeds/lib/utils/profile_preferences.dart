@@ -5,6 +5,7 @@ class ProfilePreferences {
   static const _keyUsername = 'username';
   static const _keyEmail = 'email';
   static const _keyPhone = 'phone';
+  static const _keyProfileImage = 'profile_image';
 
   static Future<void> saveProfile({
     required String name,
@@ -27,5 +28,15 @@ class ProfilePreferences {
       'email': prefs.getString(_keyEmail) ?? '',
       'phone': prefs.getString(_keyPhone) ?? '',
     };
+  }
+
+  static Future<void> saveProfileImage(String imagePath) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyProfileImage, imagePath);
+  }
+
+  static Future<String?> getProfileImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyProfileImage);
   }
 }

@@ -32,6 +32,7 @@ class SettingPage extends StatefulWidget {
 }
 
 class _SettingPageState extends State<SettingPage> {
+  String imagePath = '';
   String name = '';
   String email = '';
   String phone = '';
@@ -45,6 +46,7 @@ class _SettingPageState extends State<SettingPage> {
   Future<void> loadProfile() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
+      imagePath = prefs.getString('profile_image') ?? '';
       name = prefs.getString('name') ?? 'uneeds';
       email = prefs.getString('email') ?? 'uneedsapp@gmail.com';
       phone = prefs.getString('phone') ?? '08123456789';
@@ -64,7 +66,7 @@ class _SettingPageState extends State<SettingPage> {
         ),
         centerTitle: true,
         title: const Text(
-          'PROFIL',
+          'Pengaturan',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
       ),
@@ -95,7 +97,7 @@ class _SettingPageState extends State<SettingPage> {
             const SizedBox(height: 60),
             _MenuItem(
               icon: Icons.person_outline,
-              label: 'Profil',
+              label: 'Edit Profile',
               onTap: () {
                 Navigator.push(
                   context,
