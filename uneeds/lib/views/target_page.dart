@@ -22,11 +22,10 @@ class TargetPage extends StatefulWidget {
 }
 
 class _TargetPageState extends State<TargetPage> {
-  
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9FF),
       body: Column(
@@ -76,7 +75,9 @@ class _TargetPageState extends State<TargetPage> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.transparent,
                                 elevation: 0,
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -95,7 +96,9 @@ class _TargetPageState extends State<TargetPage> {
                           children: [
                             Expanded(
                               child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -114,7 +117,8 @@ class _TargetPageState extends State<TargetPage> {
                                     ),
                                     const SizedBox(width: 24),
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
                                         const Text(
                                           'Target',
@@ -145,7 +149,9 @@ class _TargetPageState extends State<TargetPage> {
                             ),
                             Expanded(
                               child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -164,7 +170,8 @@ class _TargetPageState extends State<TargetPage> {
                                     ),
                                     const SizedBox(width: 24),
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
                                         const Text(
                                           'Selesai',
@@ -241,12 +248,16 @@ class _TargetPageState extends State<TargetPage> {
                                   ),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                   child: Text(
                                     'Selesai',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      color: const Color(0xFF2B4865).withOpacity(0.5),
+                                      color: const Color(
+                                        0xFF2B4865,
+                                      ).withOpacity(0.5),
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -265,8 +276,14 @@ class _TargetPageState extends State<TargetPage> {
                           TaskItem(text: 'Mengurus berkas', isDone: true),
                           TaskItem(text: 'Capai IPK 3.0', isDone: true),
                           TaskItem(text: 'Mengikuti organisasi', isDone: false),
-                          TaskItem(text: 'Mengikuti kepanitiaan', isDone: false),
-                          TaskItem(text: 'Mengikuti sosialisasi', isDone: false),
+                          TaskItem(
+                            text: 'Mengikuti kepanitiaan',
+                            isDone: false,
+                          ),
+                          TaskItem(
+                            text: 'Mengikuti sosialisasi',
+                            isDone: false,
+                          ),
                         ],
                       ),
                     ],
@@ -297,7 +314,9 @@ class _TargetPageState extends State<TargetPage> {
                           Navigator.pushReplacement(
                             context,
                             PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) => HomePage(),
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      HomePage(),
                               transitionDuration: Duration.zero,
                               reverseTransitionDuration: Duration.zero,
                             ),
@@ -317,14 +336,16 @@ class _TargetPageState extends State<TargetPage> {
                           ),
                         ),
                       ),
-                      
+
                       // Calendar button
                       InkWell(
                         onTap: () {
                           Navigator.pushReplacement(
                             context,
                             PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) => SchedulePage(),
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      SchedulePage(),
                               transitionDuration: Duration.zero,
                               reverseTransitionDuration: Duration.zero,
                             ),
@@ -344,14 +365,16 @@ class _TargetPageState extends State<TargetPage> {
                           ),
                         ),
                       ),
-                      
+
                       // List button
                       InkWell(
                         onTap: () {
                           Navigator.pushReplacement(
                             context,
                             PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) => NotePage(),
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      NotePage(),
                               transitionDuration: Duration.zero,
                               reverseTransitionDuration: Duration.zero,
                             ),
@@ -371,7 +394,7 @@ class _TargetPageState extends State<TargetPage> {
                           ),
                         ),
                       ),
-                      
+
                       // Molecule/Api button (active)
                       Container(
                         width: 50,
@@ -398,11 +421,7 @@ class _TargetPageState extends State<TargetPage> {
                     color: primaryBlueColor,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.add,
-                    color: Colors.white,
-                    size: 30,
-                  ),
+                  child: const Icon(Icons.add, color: Colors.white, size: 30),
                 ),
               ],
             ),
@@ -412,161 +431,160 @@ class _TargetPageState extends State<TargetPage> {
       ),
     );
   }
-  }
+}
 
-  Widget _targetCard({
-    required String title,
-    required String deadline,
-    required List<TaskItem> tasks,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF5F9FF),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.school_rounded,
-                      color: Color(0xFF2B4865),
-                      size: 32,
-                    ),
+Widget _targetCard({
+  required String title,
+  required String deadline,
+  required List<TaskItem> tasks,
+}) {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 10,
+          offset: const Offset(0, 5),
+        ),
+      ],
+    ),
+    child: Stack(
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F9FF),
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2B4865),
-                          ),
+                  child: const Icon(
+                    Icons.school_rounded,
+                    color: Color(0xFF2B4865),
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2B4865),
                         ),
-                        const SizedBox(height: 4),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Deadline : $deadline',
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            ...tasks
+                .map(
+                  (task) => Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color:
+                                task.isDone
+                                    ? const Color(0xFF2B4865)
+                                    : Colors.white,
+                            border: Border.all(
+                              color: const Color(0xFF2B4865),
+                              width: 2,
+                            ),
+                          ),
+                          child:
+                              task.isDone
+                                  ? const Icon(
+                                    Icons.check,
+                                    color: Colors.white,
+                                    size: 16,
+                                  )
+                                  : null,
+                        ),
+                        const SizedBox(width: 12),
                         Text(
-                          'Deadline : $deadline',
-                          style: const TextStyle(
-                            color: Colors.red,
-                            fontSize: 14,
+                          task.text,
+                          style: TextStyle(
+                            fontSize: 16,
                             fontWeight: FontWeight.w500,
+                            color: const Color(0xFF2B4865),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
+                )
+                .toList(),
+            // Spacer untuk memberikan ruang antara list dan tombol edit
+            const SizedBox(height: 50),
+          ],
+        ),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: Container(
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFF2B4865),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ElevatedButton.icon(
+              onPressed: () {},
+              icon: const Icon(
+                Icons.edit_rounded,
+                color: Colors.white,
+                size: 20,
               ),
-              const SizedBox(height: 24),
-              ...tasks
-                  .map(
-                    (task) => Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 24,
-                            height: 24,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color:
-                                  task.isDone
-                                      ? const Color(0xFF2B4865)
-                                      : Colors.white,
-                              border: Border.all(
-                                color: const Color(0xFF2B4865),
-                                width: 2,
-                              ),
-                            ),
-                            child:
-                                task.isDone
-                                    ? const Icon(
-                                      Icons.check,
-                                      color: Colors.white,
-                                      size: 16,
-                                    )
-                                    : null,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            task.text,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF2B4865),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                  .toList(),
-              // Spacer untuk memberikan ruang antara list dan tombol edit
-              const SizedBox(height: 50),
-            ],
-          ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: Container(
-              height: 40,
-              decoration: BoxDecoration(
-                color: const Color(0xFF2B4865),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.edit_rounded,
+              label: const Text(
+                'Edit',
+                style: TextStyle(
                   color: Colors.white,
-                  size: 20,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
-                label: const Text(
-                  'Edit',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
 }
 
 class TaskItem {

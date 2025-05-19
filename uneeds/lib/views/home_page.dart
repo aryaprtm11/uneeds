@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uneeds/utils/color.dart';
+import 'package:uneeds/views/profile_page.dart';
 import 'package:uneeds/views/schedule_page.dart';
 import 'package:uneeds/views/note_page.dart';
 import 'package:uneeds/views/target_page.dart';
@@ -18,19 +19,19 @@ class _HomePageState extends State<HomePage> {
   User? user;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String firstName = "";
-  
+
   @override
   void initState() {
     super.initState();
     user = widget.user ?? FirebaseAuth.instance.currentUser;
-    
+
     // Mendapatkan nama depan user
     if (user != null && user!.displayName != null) {
       firstName = _getFirstName(user!.displayName!);
     } else {
       firstName = "User";
     }
-    
+
     // Debug print untuk memeriksa apakah user sudah terautentikasi
     print("HomePage: User authenticated: ${user != null}");
     if (user != null) {
@@ -38,7 +39,7 @@ class _HomePageState extends State<HomePage> {
       print("User name: ${user!.displayName}");
     }
   }
-  
+
   // Fungsi untuk mendapatkan nama depan dari nama lengkap
   String _getFirstName(String fullName) {
     List<String> nameParts = fullName.trim().split(" ");
@@ -48,7 +49,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     return Scaffold(
       backgroundColor: Color(0xFFE6F2FD), // Latar belakang biru muda
       body: Column(
@@ -79,10 +80,7 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Text(
                       "Hello, $firstName!",
-                      style: TextStyle(
-                        color: Color(0xFF4A6D8C),
-                        fontSize: 16,
-                      ),
+                      style: TextStyle(color: Color(0xFF4A6D8C), fontSize: 16),
                     ),
                     SizedBox(height: 5),
                     Text(
@@ -97,6 +95,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 Row(
                   children: [
+                    // membuka halaman notifikasi
                     InkWell(
                       onTap: () {
                         Navigator.push(
@@ -116,23 +115,35 @@ class _HomePageState extends State<HomePage> {
                         child: Icon(Icons.notifications, color: Colors.white),
                       ),
                     ),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xFF1F4D70),
-                        shape: BoxShape.circle,
+
+                    // membuka halaman profile
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ProfilePage(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Color(0xFF1F4D70),
+                          shape: BoxShape.circle,
+                        ),
+                        padding: EdgeInsets.all(8),
+                        child: Icon(Icons.person, color: Colors.white),
                       ),
-                      padding: EdgeInsets.all(8),
-                      child: Icon(Icons.person, color: Colors.white),
                     ),
                   ],
                 ),
               ],
             ),
           ),
-          
+
           // Spacer to push navbar to bottom
           Spacer(),
-          
+
           // Navbar dan tombol plus
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -162,14 +173,16 @@ class _HomePageState extends State<HomePage> {
                         size: 30,
                       ),
                     ),
-                    
+
                     // Calendar button
                     InkWell(
                       onTap: () {
                         Navigator.pushReplacement(
                           context,
                           PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) => SchedulePage(),
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    SchedulePage(),
                             transitionDuration: Duration.zero,
                             reverseTransitionDuration: Duration.zero,
                           ),
@@ -181,14 +194,16 @@ class _HomePageState extends State<HomePage> {
                         size: 30,
                       ),
                     ),
-                    
+
                     // List button
                     InkWell(
                       onTap: () {
                         Navigator.pushReplacement(
                           context,
                           PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) => NotePage(),
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    NotePage(),
                             transitionDuration: Duration.zero,
                             reverseTransitionDuration: Duration.zero,
                           ),
@@ -200,14 +215,16 @@ class _HomePageState extends State<HomePage> {
                         size: 30,
                       ),
                     ),
-                    
+
                     // Molecule/Api button
                     InkWell(
                       onTap: () {
                         Navigator.pushReplacement(
                           context,
                           PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) => TargetPage(),
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    TargetPage(),
                             transitionDuration: Duration.zero,
                             reverseTransitionDuration: Duration.zero,
                           ),
@@ -222,7 +239,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              
+
               // Plus button (diluar navbar)
               Container(
                 width: 50,
@@ -232,11 +249,7 @@ class _HomePageState extends State<HomePage> {
                   color: primaryBlueColor,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.add,
-                  color: Colors.white,
-                  size: 30,
-                ),
+                child: Icon(Icons.add, color: Colors.white, size: 30),
               ),
             ],
           ),
