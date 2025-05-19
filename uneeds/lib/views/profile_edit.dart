@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uneeds/utils/profile_preferences.dart';
 
 class ProfileEdit extends StatefulWidget {
   const ProfileEdit({Key? key}) : super(key: key);
@@ -9,18 +10,12 @@ class ProfileEdit extends StatefulWidget {
 
 class _ProfileEditState extends State<ProfileEdit> {
   // Controller untuk input
-  final TextEditingController nameController = TextEditingController(
-    text: 'aryatukam',
-  );
+  final TextEditingController nameController = TextEditingController(text: '');
   final TextEditingController usernameController = TextEditingController(
-    text: 'aryatukam',
+    text: '',
   );
-  final TextEditingController emailController = TextEditingController(
-    text: 'aryatukam@gmail.com',
-  );
-  final TextEditingController phoneController = TextEditingController(
-    text: '08123456789',
-  );
+  final TextEditingController emailController = TextEditingController(text: '');
+  final TextEditingController phoneController = TextEditingController(text: '');
 
   @override
   Widget build(BuildContext context) {
@@ -80,13 +75,21 @@ class _ProfileEditState extends State<ProfileEdit> {
 
             // Tombol Submit
             ElevatedButton(
-              onPressed: () {
-                // Simpan logika update di sini (misalnya kirim ke backend atau update state)
+              onPressed: () async {
+                await ProfilePreferences.saveProfile(
+                  name: nameController.text,
+                  username: usernameController.text,
+                  email: emailController.text,
+                  phone: phoneController.text,
+                );
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Data berhasil diperbarui!')),
                 );
+
                 Navigator.pop(context);
               },
+
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey[400],
                 padding: const EdgeInsets.symmetric(
