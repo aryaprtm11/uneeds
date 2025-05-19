@@ -1,12 +1,28 @@
 import 'package:flutter/material.dart';
+
+// Utils
 import 'package:uneeds/utils/color.dart';
+
+// Views
 import 'package:uneeds/views/home_page.dart';
 import 'package:uneeds/views/note_page.dart';
 import 'package:uneeds/views/schedule_page.dart';
 
-class TargetPage extends StatelessWidget {
+// Models
+import 'package:uneeds/models/target.dart';
+
+// Database Service
+import 'package:uneeds/services/database_service.dart';
+
+class TargetPage extends StatefulWidget {
   const TargetPage({super.key});
 
+  @override
+  State<TargetPage> createState() => _TargetPageState();
+}
+
+class _TargetPageState extends State<TargetPage> {
+  
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -396,6 +412,7 @@ class TargetPage extends StatelessWidget {
       ),
     );
   }
+  }
 
   Widget _targetCard({
     required String title,
@@ -464,41 +481,49 @@ class TargetPage extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 24),
-              ...tasks.map((task) => Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: task.isDone ? const Color(0xFF2B4865) : Colors.white,
-                        border: Border.all(
-                          color: const Color(0xFF2B4865),
-                          width: 2,
-                        ),
+              ...tasks
+                  .map(
+                    (task) => Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color:
+                                  task.isDone
+                                      ? const Color(0xFF2B4865)
+                                      : Colors.white,
+                              border: Border.all(
+                                color: const Color(0xFF2B4865),
+                                width: 2,
+                              ),
+                            ),
+                            child:
+                                task.isDone
+                                    ? const Icon(
+                                      Icons.check,
+                                      color: Colors.white,
+                                      size: 16,
+                                    )
+                                    : null,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            task.text,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF2B4865),
+                            ),
+                          ),
+                        ],
                       ),
-                      child: task.isDone
-                          ? const Icon(
-                              Icons.check,
-                              color: Colors.white,
-                              size: 16,
-                            )
-                          : null,
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      task.text,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF2B4865),
-                      ),
-                    ),
-                  ],
-                ),
-              )).toList(),
+                  )
+                  .toList(),
               // Spacer untuk memberikan ruang antara list dan tombol edit
               const SizedBox(height: 50),
             ],
@@ -548,8 +573,5 @@ class TaskItem {
   final String text;
   final bool isDone;
 
-  TaskItem({
-    required this.text,
-    required this.isDone,
-  });
-} 
+  TaskItem({required this.text, required this.isDone});
+}

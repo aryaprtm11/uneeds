@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
+// Utils
 import 'package:uneeds/utils/color.dart';
+
+// Views
 import 'package:uneeds/views/home_page.dart';
 import 'package:uneeds/views/schedule_page.dart';
 import 'package:uneeds/views/target_page.dart';
 
-class NotePage extends StatelessWidget {
+class NotePage extends StatefulWidget {
   const NotePage({super.key});
 
   @override
+  State<NotePage> createState() => _NotePageState();
+}
+
+class _NotePageState extends State<NotePage> {
+  @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9FF),
       body: Column(
@@ -62,7 +69,9 @@ class NotePage extends StatelessWidget {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.transparent,
                                 elevation: 0,
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -72,7 +81,7 @@ class NotePage extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      
+
                       // Search Bar
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -89,32 +98,38 @@ class NotePage extends StatelessWidget {
                               fontSize: 16,
                             ),
                             border: InputBorder.none,
-                            icon: Icon(
-                              Icons.search,
-                              color: Colors.grey[400],
-                            ),
+                            icon: Icon(Icons.search, color: Colors.grey[400]),
                           ),
                         ),
                       ),
                       const SizedBox(height: 24),
-                      
+
+                      // Implementasi future builder dengan return gridview builder
                       // Notes Grid
                       GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 0.85,
-                        ),
-                        itemCount: 4, // Example count
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: 0.85,
+                            ),
+                        itemCount:
+                            5, // Banyak Data Catatan (Ganti dengan panjang data dinamis )
                         itemBuilder: (context, index) {
                           return _buildNoteCard(
                             title: 'Catatan ${index + 1}',
-                            date: '12 Mar 2024',
-                            content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-                            color: index % 2 == 0 ? const Color(0xFF2B4865) : const Color(0xFF4A7B97),
+                            date:
+                                '12 Mar 2024', // Ganti dengan tanggal catatan dari database
+                            content:
+                                // Ganti dengan isi catatan dari database
+                                'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                            color:
+                                index % 2 == 0
+                                    ? const Color(0xFF2B4865)
+                                    : const Color(0xFF4A7B97),
                           );
                         },
                       ),
@@ -124,7 +139,7 @@ class NotePage extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Navigation Bar
           Container(
             padding: const EdgeInsets.only(top: 8),
@@ -147,7 +162,9 @@ class NotePage extends StatelessWidget {
                           Navigator.pushReplacement(
                             context,
                             PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) => HomePage(),
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      HomePage(),
                               transitionDuration: Duration.zero,
                               reverseTransitionDuration: Duration.zero,
                             ),
@@ -167,14 +184,16 @@ class NotePage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      
+
                       // Calendar button
                       InkWell(
                         onTap: () {
                           Navigator.pushReplacement(
                             context,
                             PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) => SchedulePage(),
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      SchedulePage(),
                               transitionDuration: Duration.zero,
                               reverseTransitionDuration: Duration.zero,
                             ),
@@ -194,7 +213,7 @@ class NotePage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      
+
                       // List button (active)
                       Container(
                         width: 50,
@@ -209,14 +228,16 @@ class NotePage extends StatelessWidget {
                           size: 30,
                         ),
                       ),
-                      
+
                       // Molecule/Api button
                       InkWell(
                         onTap: () {
                           Navigator.pushReplacement(
                             context,
                             PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) => TargetPage(),
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      TargetPage(),
                               transitionDuration: Duration.zero,
                               reverseTransitionDuration: Duration.zero,
                             ),
@@ -248,11 +269,7 @@ class NotePage extends StatelessWidget {
                     color: primaryBlueColor,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.add,
-                    color: Colors.white,
-                    size: 30,
-                  ),
+                  child: const Icon(Icons.add, color: Colors.white, size: 30),
                 ),
               ],
             ),
@@ -263,6 +280,7 @@ class NotePage extends StatelessWidget {
     );
   }
 
+  // Notes Card
   Widget _buildNoteCard({
     required String title,
     required String date,
@@ -316,11 +334,7 @@ class NotePage extends StatelessWidget {
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
-                  Icons.edit,
-                  color: Colors.white,
-                  size: 20,
-                ),
+                child: const Icon(Icons.edit, color: Colors.white, size: 20),
               ),
             ],
           ),
@@ -328,4 +342,10 @@ class NotePage extends StatelessWidget {
       ),
     );
   }
-} 
+
+  // Save Catatan
+  Future<void> _saveCatatan() async {
+    // Implement : Validasi semua field diisi
+    // Implement : try catch -> addCatatan()
+  }
+}

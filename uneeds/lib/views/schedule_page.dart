@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:uneeds/models/jadwal.dart';
-import 'package:uneeds/services/database_service.dart';
+
+// Utils
 import 'package:uneeds/utils/color.dart';
+
+// Views
 import 'package:uneeds/views/home_page.dart';
 import 'package:uneeds/views/note_page.dart';
 import 'package:uneeds/views/target_page.dart';
 import 'package:uneeds/views/add_schedule.dart';
+
+// Database Service
+import 'package:uneeds/services/database_service.dart';
+
+// Database Models
+import 'package:uneeds/models/jadwal.dart';
 
 class SchedulePage extends StatefulWidget {
   const SchedulePage({super.key});
