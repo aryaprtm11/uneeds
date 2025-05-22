@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:uneeds/utils/color.dart';
 import 'package:uneeds/utils/profile_preferences.dart';
 
 class ProfileEdit extends StatefulWidget {
@@ -144,7 +145,7 @@ class _ProfileEditState extends State<ProfileEdit> {
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
+                  backgroundColor: secondaryBlueColor,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
