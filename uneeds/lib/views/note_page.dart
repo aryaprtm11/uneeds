@@ -5,6 +5,7 @@ import 'package:uneeds/utils/color.dart';
 // Views
 import 'package:uneeds/views/home_page.dart';
 import 'package:uneeds/views/schedule_page.dart';
+import 'package:uneeds/views/tambah_catatan.dart';
 import 'package:uneeds/views/target_page.dart';
 
 class NotePage extends StatefulWidget {
@@ -51,7 +52,13 @@ class _NotePageState extends State<NotePage> {
                             ),
                             child: ElevatedButton.icon(
                               onPressed: () {
-                                // TODO: Implement add note
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => const TambahCatatanPage(),
+                                  ),
+                                );
                               },
                               icon: const Icon(
                                 Icons.add_circle_outline,
@@ -59,7 +66,7 @@ class _NotePageState extends State<NotePage> {
                                 size: 24,
                               ),
                               label: const Text(
-                                'Tambah Catatan',
+                                'Tambah',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,

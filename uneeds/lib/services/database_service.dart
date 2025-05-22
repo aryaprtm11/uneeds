@@ -93,7 +93,7 @@ class DatabaseService {
             id_catatan INTEGER PRIMARY KEY AUTOINCREMENT,
             judul_catatan TEXT,
             isi_catatan TEXT,
-            waktu_catatan TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            waktu_catatan TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
           )
         ''');
         await db.execute('''
@@ -338,4 +338,6 @@ class DatabaseService {
       return [];
     }
   }
+
+  insertCatatan(String teks, String? path) {}
 }

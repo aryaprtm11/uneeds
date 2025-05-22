@@ -131,7 +131,7 @@ class _HomePageState extends State<HomePage> {
                           shape: BoxShape.circle,
                         ),
                         padding: EdgeInsets.all(8),
-                        child: Icon(Icons.person, color: Colors.white),
+                        child: Icon(Icons.settings, color: Colors.white),
                       ),
                     ),
                   ],

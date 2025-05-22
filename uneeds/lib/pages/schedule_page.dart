@@ -10,10 +10,7 @@ class SchedulePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Jadwal Kuliah',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
         actions: [
           IconButton(
@@ -30,12 +27,7 @@ class SchedulePage extends StatelessWidget {
         ],
       ),
       body: Column(
-        children: [
-          _buildDayBar(),
-          Expanded(
-            child: _buildScheduleList(),
-          ),
-        ],
+        children: [_buildDayBar(), Expanded(child: _buildScheduleList())],
       ),
       bottomNavigationBar: _buildBottomNavBar(),
     );
@@ -63,10 +55,7 @@ class SchedulePage extends StatelessWidget {
       child: Center(
         child: Text(
           day,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
       ),
     );
@@ -132,10 +121,7 @@ class SchedulePage extends StatelessWidget {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home_outlined),
-          label: 'Home',
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
         BottomNavigationBarItem(
           icon: Icon(Icons.calendar_today),
           label: 'Calendar',
@@ -144,17 +130,11 @@ class SchedulePage extends StatelessWidget {
           icon: Icon(Icons.add_circle_outline),
           label: '',
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.list_alt),
-          label: 'List',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.api),
-          label: 'API',
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'List'),
+        BottomNavigationBarItem(icon: Icon(Icons.api), label: 'API'),
       ],
       currentIndex: 1,
       selectedItemColor: Colors.blue,
     );
   }
-} 
+}
