@@ -24,6 +24,25 @@ class SchedulePage extends StatefulWidget {
 
 class _SchedulePageState extends State<SchedulePage> {
   final DatabaseService _databaseService = DatabaseService.instance;
+  String selectedDay = 'Senin'; // Default hari yang dipilih
+
+  // Map untuk konversi singkatan hari ke nama lengkap
+  final Map<String, String> dayAbbreviations = {
+    'S': 'Senin',
+    'S': 'Selasa',
+    'R': 'Rabu',
+    'K': 'Kamis',
+    'J': 'Jumat',
+    'S': 'Sabtu',
+    'M': 'Minggu',
+  };
+
+  // Fungsi untuk mengubah hari yang dipilih
+  void _onDaySelected(String abbreviation) {
+    setState(() {
+      selectedDay = dayAbbreviations[abbreviation] ?? 'Senin';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,13 +126,13 @@ class _SchedulePageState extends State<SchedulePage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            _dayButton('S', true),
-                            _dayButton('S', false),
-                            _dayButton('R', false),
-                            _dayButton('K', false),
-                            _dayButton('J', false),
-                            _dayButton('S', false),
-                            _dayButton('M', false),
+                            _dayButton('S', 'Senin'),
+                            _dayButton('S', 'Selasa'),
+                            _dayButton('R', 'Rabu'),
+                            _dayButton('K', 'Kamis'),
+                            _dayButton('J', 'Jumat'),
+                            _dayButton('S', 'Sabtu'),
+                            _dayButton('M', 'Minggu'),
                           ],
                         ),
                       ),
@@ -133,19 +152,38 @@ class _SchedulePageState extends State<SchedulePage> {
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting) {
                               return const Center(
-                                child: CircularProgressIndicator(),
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
                               );
                             } else if (snapshot.hasError) {
                               return Center(
-                                child: Text('Error: \${snapshot.error}'),
+                                child: Text(
+                                  'Error: ${snapshot.error}',
+                                  style: TextStyle(color: Colors.white),
+                                ),
                               );
                             } else if (snapshot.hasData &&
                                 snapshot.data!.isNotEmpty) {
+                              // Filter jadwal berdasarkan hari yang dipilih
+                              final filteredJadwal = snapshot.data!
+                                  .where((jadwal) => jadwal.hari == selectedDay)
+                                  .toList();
+
+                              if (filteredJadwal.isEmpty) {
+                                return Center(
+                                  child: Text(
+                                    'Tidak ada jadwal untuk hari $selectedDay',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                );
+                              }
+
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'Senin',
+                                  Text(
+                                    selectedDay,
                                     style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.w700,
@@ -153,7 +191,7 @@ class _SchedulePageState extends State<SchedulePage> {
                                     ),
                                   ),
                                   const SizedBox(height: 16),
-                                  ...snapshot.data!.map(
+                                  ...filteredJadwal.map(
                                     (jadwal) => _scheduleTimeRow(
                                       jadwal.waktuMulai,
                                       _scheduleCard(
@@ -234,25 +272,35 @@ class _SchedulePageState extends State<SchedulePage> {
     );
   }
 
-  Widget _dayButton(String day, bool isSelected) => Container(
-    width: 40,
-    height: 40,
-    decoration: BoxDecoration(
-      color: isSelected ? Colors.white : Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
-      border: !isSelected ? Border.all(color: Colors.white, width: 1) : null,
-    ),
-    child: Center(
-      child: Text(
-        day,
-        style: TextStyle(
-          color: isSelected ? const Color(0xFF2B4865) : Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
+  Widget _dayButton(String abbreviation, String fullDay) {
+    bool isSelected = selectedDay == fullDay;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          selectedDay = fullDay;
+        });
+      },
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: !isSelected ? Border.all(color: Colors.white, width: 1) : null,
+        ),
+        child: Center(
+          child: Text(
+            abbreviation,
+            style: TextStyle(
+              color: isSelected ? const Color(0xFF2B4865) : Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 
   Widget _scheduleTimeRow(String time, Widget card) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,

@@ -5,7 +5,7 @@ import 'package:uneeds/utils/color.dart';
 // Views
 import 'package:uneeds/views/home_page.dart';
 import 'package:uneeds/views/schedule_page.dart';
-import 'package:uneeds/views/tambah_catatan.dart';
+import 'package:uneeds/views/add_schedule.dart';
 import 'package:uneeds/views/target_page.dart';
 
 class NotePage extends StatefulWidget {
@@ -56,7 +56,7 @@ class _NotePageState extends State<NotePage> {
                                   context,
                                   MaterialPageRoute(
                                     builder:
-                                        (context) => const TambahCatatanPage(),
+                                        (context) => const AddSchedulePage(),
                                   ),
                                 );
                               },
