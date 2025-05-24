@@ -148,6 +148,40 @@ class DatabaseService {
     }
   }
 
+  // Update Jadwal
+  Future<bool> updateJadwal(
+    int id,
+    String matkul,
+    String dosen,
+    String hari,
+    String ruangan,
+    String waktuMulai,
+    String waktuSelesai,
+    String kategori,
+  ) async {
+    try {
+      final db = await database;
+      await db.update(
+        tableJadwal,
+        {
+          columnMatkul: matkul,
+          columnDosen: dosen,
+          columnHari: hari,
+          columnRuangan: ruangan,
+          columnWaktuMulai: waktuMulai,
+          columnWaktuSelesai: waktuSelesai,
+          columnKategori: kategori,
+        },
+        where: '$columnIdJadwal = ?',
+        whereArgs: [id],
+      );
+      return true;
+    } catch (e) {
+      print('Error updating jadwal: $e');
+      return false;
+    }
+  }
+
   // Get data jadwal
   Future<List<Jadwal>> getJadwal() async {
     final db = await database;
@@ -156,6 +190,7 @@ class DatabaseService {
         data
             .map(
               (e) => Jadwal(
+                id: e["id_jadwal"] as int,
                 matkul: e["matkul"] as String,
                 dosen: e["dosen"] as String,
                 hari: e["hari"] as String,
@@ -168,6 +203,22 @@ class DatabaseService {
             .toList();
 
     return jadwal;
+  }
+
+  // Delete Jadwal
+  Future<bool> deleteJadwal(int id) async {
+    try {
+      final db = await database;
+      await db.delete(
+        tableJadwal,
+        where: '$columnIdJadwal = ?',
+        whereArgs: [id],
+      );
+      return true;
+    } catch (e) {
+      print('Error deleting jadwal: $e');
+      return false;
+    }
   }
 
   /* Controller Catatan */

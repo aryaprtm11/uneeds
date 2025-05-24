@@ -1,0 +1,6 @@
+<application
+    android:label="Uneeds"
+    android:name="${applicationName}"
+    android:icon="@mipmap/ic_launcher">
+    <!-- ... rest of the manifest ... -->
+</application> 

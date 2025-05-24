@@ -8,6 +8,7 @@ import 'package:uneeds/views/home_page.dart';
 import 'package:uneeds/views/note_page.dart';
 import 'package:uneeds/views/target_page.dart';
 import 'package:uneeds/views/add_schedule.dart';
+import 'package:uneeds/views/edit_schedule.dart';
 
 // Database Service
 import 'package:uneeds/services/database_service.dart';
@@ -199,6 +200,7 @@ class _SchedulePageState extends State<SchedulePage> {
                                         jadwal.dosen,
                                         "${jadwal.waktuMulai} - ${jadwal.waktuSelesai}",
                                         jadwal.ruangan,
+                                        jadwal: jadwal,
                                       ),
                                     ),
                                   ),
@@ -221,8 +223,8 @@ class _SchedulePageState extends State<SchedulePage> {
               ),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.only(top: 8),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 55),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -232,6 +234,14 @@ class _SchedulePageState extends State<SchedulePage> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(40),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2B4865).withOpacity(0.15),
+                        spreadRadius: 0,
+                        blurRadius: 10,
+                        offset: const Offset(0, 0),
+                      ),
+                    ],
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -260,13 +270,20 @@ class _SchedulePageState extends State<SchedulePage> {
                   decoration: BoxDecoration(
                     color: primaryBlueColor,
                     shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryBlueColor.withOpacity(0.25),
+                        spreadRadius: 0,
+                        blurRadius: 10,
+                        offset: const Offset(0, 0),
+                      ),
+                    ],
                   ),
                   child: const Icon(Icons.add, color: Colors.white, size: 30),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 55),
         ],
       ),
     );
@@ -335,70 +352,87 @@ class _SchedulePageState extends State<SchedulePage> {
     String duration,
     String room, {
     bool isLast = false,
-  }) => Container(
-    margin: EdgeInsets.only(bottom: isLast ? 0 : 24),
-    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-    width: double.infinity,
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Row(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: const Color(0xFF4A7B97).withOpacity(0.2),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(
-            Icons.video_camera_front_rounded,
-            color: Color(0xFF4A7B97),
-            size: 24,
-          ),
+    Jadwal? jadwal,
+  }) =>
+      Container(
+        margin: EdgeInsets.only(bottom: isLast ? 0 : 24),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                subject,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF2B4865),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: const Color(0xFF4A7B97).withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.video_camera_front_rounded,
+                color: Color(0xFF4A7B97),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    subject,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2B4865),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "Dosen: $lecturer",
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
+                  Text(
+                    duration,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
+                  Text(
+                    room,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            InkWell(
+              onTap: jadwal != null
+                  ? () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditSchedulePage(jadwal: jadwal),
+                        ),
+                      );
+                      if (result == true) {
+                        setState(() {}); // Refresh halaman setelah edit
+                      }
+                    }
+                  : null,
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2B4865),
+                  borderRadius: BorderRadius.circular(8),
                 ),
+                child: const Icon(Icons.edit_rounded, color: Colors.white, size: 18),
               ),
-              const SizedBox(height: 4),
-              Text(
-                "Dosen: $lecturer",
-                style: TextStyle(color: Colors.grey[600], fontSize: 12),
-              ),
-              Text(
-                duration,
-                style: TextStyle(color: Colors.grey[600], fontSize: 12),
-              ),
-              Text(
-                room,
-                style: TextStyle(color: Colors.grey[600], fontSize: 12),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: const Color(0xFF2B4865),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(Icons.edit_rounded, color: Colors.white, size: 18),
-        ),
-      ],
-    ),
-  );
+      );
 
   Widget _navIcon(
     BuildContext context,

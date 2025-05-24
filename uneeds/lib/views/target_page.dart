@@ -293,8 +293,8 @@ class _TargetPageState extends State<TargetPage> {
             ),
           ),
           // Navbar dan tombol plus
-          Container(
-            padding: const EdgeInsets.only(top: 8),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 55),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -304,115 +304,35 @@ class _TargetPageState extends State<TargetPage> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(40),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2B4865).withOpacity(0.15),
+                        spreadRadius: 0,
+                        blurRadius: 10,
+                        offset: const Offset(0, 0),
+                      ),
+                    ],
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      // Home button
-                      InkWell(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder:
-                                  (context, animation, secondaryAnimation) =>
-                                      HomePage(),
-                              transitionDuration: Duration.zero,
-                              reverseTransitionDuration: Duration.zero,
-                            ),
-                          );
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.home_rounded,
-                            color: primaryBlueColor,
-                            size: 30,
-                          ),
-                        ),
+                      _navIcon(context, Icons.home_rounded, HomePage(), false),
+                      _navIcon(
+                        context,
+                        Icons.calendar_today_rounded,
+                        SchedulePage(),
+                        false,
                       ),
-
-                      // Calendar button
-                      InkWell(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder:
-                                  (context, animation, secondaryAnimation) =>
-                                      SchedulePage(),
-                              transitionDuration: Duration.zero,
-                              reverseTransitionDuration: Duration.zero,
-                            ),
-                          );
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.calendar_today_rounded,
-                            color: primaryBlueColor,
-                            size: 30,
-                          ),
-                        ),
+                      _navIcon(
+                        context,
+                        Icons.view_list_rounded,
+                        NotePage(),
+                        false,
                       ),
-
-                      // List button
-                      InkWell(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder:
-                                  (context, animation, secondaryAnimation) =>
-                                      NotePage(),
-                              transitionDuration: Duration.zero,
-                              reverseTransitionDuration: Duration.zero,
-                            ),
-                          );
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.view_list_rounded,
-                            color: primaryBlueColor,
-                            size: 30,
-                          ),
-                        ),
-                      ),
-
-                      // Molecule/Api button (active)
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: primaryBlueColor,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.api_rounded,
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                      ),
+                      _navIcon(context, Icons.api_rounded, TargetPage(), true),
                     ],
                   ),
                 ),
-                // Plus button (diluar navbar)
                 Container(
                   width: 50,
                   height: 50,
@@ -420,13 +340,20 @@ class _TargetPageState extends State<TargetPage> {
                   decoration: BoxDecoration(
                     color: primaryBlueColor,
                     shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryBlueColor.withOpacity(0.25),
+                        spreadRadius: 0,
+                        blurRadius: 10,
+                        offset: const Offset(0, 0),
+                      ),
+                    ],
                   ),
                   child: const Icon(Icons.add, color: Colors.white, size: 30),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 55),
         ],
       ),
     );
@@ -592,4 +519,32 @@ class TaskItem {
   final bool isDone;
 
   TaskItem({required this.text, required this.isDone});
+}
+
+Widget _navIcon(BuildContext context, IconData icon, Widget page, bool isActive) {
+  return InkWell(
+    onTap: () {
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => page,
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
+      );
+    },
+    child: Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        color: isActive ? primaryBlueColor : Colors.white,
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        icon,
+        color: isActive ? Colors.white : primaryBlueColor,
+        size: 30,
+      ),
+    ),
+  );
 }

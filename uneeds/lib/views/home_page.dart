@@ -144,115 +144,133 @@ class _HomePageState extends State<HomePage> {
           Spacer(),
 
           // Navbar dan tombol plus
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Container navbar utama
-              Container(
-                width: screenWidth * 0.65,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(40),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 55),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Container navbar utama
+                Container(
+                  width: screenWidth * 0.65,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(40),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2B4865).withOpacity(0.15),
+                        spreadRadius: 0,
+                        blurRadius: 10,
+                        offset: const Offset(0, 0),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Home button (active)
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: primaryBlueColor,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.home_rounded,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
+
+                      // Calendar button
+                      InkWell(
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      SchedulePage(),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
+                          );
+                        },
+                        child: Icon(
+                          Icons.calendar_today_rounded,
+                          color: primaryBlueColor,
+                          size: 30,
+                        ),
+                      ),
+
+                      // List button
+                      InkWell(
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      NotePage(),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
+                          );
+                        },
+                        child: Icon(
+                          Icons.view_list_rounded,
+                          color: primaryBlueColor,
+                          size: 30,
+                        ),
+                      ),
+
+                      // Molecule/Api button
+                      InkWell(
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      TargetPage(),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
+                          );
+                        },
+                        child: Icon(
+                          Icons.api_rounded,
+                          color: primaryBlueColor,
+                          size: 30,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    // Home button (active)
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: primaryBlueColor,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.home_rounded,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                    ),
 
-                    // Calendar button
-                    InkWell(
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    SchedulePage(),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
-                          ),
-                        );
-                      },
-                      child: Icon(
-                        Icons.calendar_today_rounded,
-                        color: primaryBlueColor,
-                        size: 30,
+                // Plus button (diluar navbar)
+                Container(
+                  width: 50,
+                  height: 50,
+                  margin: EdgeInsets.only(left: 10),
+                  decoration: BoxDecoration(
+                    color: primaryBlueColor,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryBlueColor.withOpacity(0.25),
+                        spreadRadius: 0,
+                        blurRadius: 10,
+                        offset: const Offset(0, 0),
                       ),
-                    ),
-
-                    // List button
-                    InkWell(
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    NotePage(),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
-                          ),
-                        );
-                      },
-                      child: Icon(
-                        Icons.view_list_rounded,
-                        color: primaryBlueColor,
-                        size: 30,
-                      ),
-                    ),
-
-                    // Molecule/Api button
-                    InkWell(
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    TargetPage(),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
-                          ),
-                        );
-                      },
-                      child: Icon(
-                        Icons.api_rounded,
-                        color: primaryBlueColor,
-                        size: 30,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  child: Icon(Icons.add, color: Colors.white, size: 30),
                 ),
-              ),
-
-              // Plus button (diluar navbar)
-              Container(
-                width: 50,
-                height: 50,
-                margin: EdgeInsets.only(left: 10),
-                decoration: BoxDecoration(
-                  color: primaryBlueColor,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.add, color: Colors.white, size: 30),
-              ),
-            ],
+              ],
+            ),
           ),
-          SizedBox(height: 55),
         ],
       ),
     );

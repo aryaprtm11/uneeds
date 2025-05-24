@@ -147,9 +147,9 @@ class _NotePageState extends State<NotePage> {
             ),
           ),
 
-          // Navigation Bar
-          Container(
-            padding: const EdgeInsets.only(top: 8),
+          // Navbar dan tombol plus
+          Padding(
+            padding: const EdgeInsets.only(bottom: 55),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -159,115 +159,35 @@ class _NotePageState extends State<NotePage> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(40),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2B4865).withOpacity(0.15),
+                        spreadRadius: 0,
+                        blurRadius: 10,
+                        offset: const Offset(0, 0),
+                      ),
+                    ],
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      // Home button
-                      InkWell(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder:
-                                  (context, animation, secondaryAnimation) =>
-                                      HomePage(),
-                              transitionDuration: Duration.zero,
-                              reverseTransitionDuration: Duration.zero,
-                            ),
-                          );
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.home_rounded,
-                            color: primaryBlueColor,
-                            size: 30,
-                          ),
-                        ),
+                      _navIcon(context, Icons.home_rounded, HomePage(), false),
+                      _navIcon(
+                        context,
+                        Icons.calendar_today_rounded,
+                        SchedulePage(),
+                        false,
                       ),
-
-                      // Calendar button
-                      InkWell(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder:
-                                  (context, animation, secondaryAnimation) =>
-                                      SchedulePage(),
-                              transitionDuration: Duration.zero,
-                              reverseTransitionDuration: Duration.zero,
-                            ),
-                          );
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.calendar_today_rounded,
-                            color: primaryBlueColor,
-                            size: 30,
-                          ),
-                        ),
+                      _navIcon(
+                        context,
+                        Icons.view_list_rounded,
+                        NotePage(),
+                        true,
                       ),
-
-                      // List button (active)
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: primaryBlueColor,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.view_list_rounded,
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                      ),
-
-                      // Molecule/Api button
-                      InkWell(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder:
-                                  (context, animation, secondaryAnimation) =>
-                                      TargetPage(),
-                              transitionDuration: Duration.zero,
-                              reverseTransitionDuration: Duration.zero,
-                            ),
-                          );
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.api_rounded,
-                            color: primaryBlueColor,
-                            size: 30,
-                          ),
-                        ),
-                      ),
+                      _navIcon(context, Icons.api_rounded, TargetPage(), false),
                     ],
                   ),
                 ),
-                // Plus button (outside navbar)
                 Container(
                   width: 50,
                   height: 50,
@@ -275,13 +195,20 @@ class _NotePageState extends State<NotePage> {
                   decoration: BoxDecoration(
                     color: primaryBlueColor,
                     shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryBlueColor.withOpacity(0.25),
+                        spreadRadius: 0,
+                        blurRadius: 10,
+                        offset: const Offset(0, 0),
+                      ),
+                    ],
                   ),
                   child: const Icon(Icons.add, color: Colors.white, size: 30),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 55),
         ],
       ),
     );
@@ -354,5 +281,31 @@ class _NotePageState extends State<NotePage> {
   Future<void> _saveCatatan() async {
     // Implement : Validasi semua field diisi
     // Implement : try catch -> addCatatan()
+  }
+
+  Widget _navIcon(BuildContext context, IconData icon, Widget page, bool isActive) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => page,
+          ),
+        );
+      },
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: isActive ? primaryBlueColor : Colors.white,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          icon,
+          color: isActive ? Colors.white : primaryBlueColor,
+          size: 30,
+        ),
+      ),
+    );
   }
 }
