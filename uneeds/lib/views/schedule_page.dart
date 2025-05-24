@@ -23,9 +23,13 @@ class SchedulePage extends StatefulWidget {
   State<SchedulePage> createState() => _SchedulePageState();
 }
 
-class _SchedulePageState extends State<SchedulePage> {
+class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderStateMixin {
   final DatabaseService _databaseService = DatabaseService.instance;
   String selectedDay = 'Senin'; // Default hari yang dipilih
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _scaleAnimation;
 
   // Map untuk konversi singkatan hari ke nama lengkap
   final Map<String, String> dayAbbreviations = {
@@ -37,6 +41,48 @@ class _SchedulePageState extends State<SchedulePage> {
     'S': 'Sabtu',
     'M': 'Minggu',
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.5, curve: Curves.easeIn),
+    ));
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0.5, 0.0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.2, 0.7, curve: Curves.easeOut),
+    ));
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.95,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.4, 1.0, curve: Curves.easeOut),
+    ));
+
+    // Mulai animasi
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   // Fungsi untuk mengubah hari yang dipilih
   void _onDaySelected(String abbreviation) {
@@ -127,13 +173,13 @@ class _SchedulePageState extends State<SchedulePage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            _dayButton('S', 'Senin'),
-                            _dayButton('S', 'Selasa'),
-                            _dayButton('R', 'Rabu'),
-                            _dayButton('K', 'Kamis'),
-                            _dayButton('J', 'Jumat'),
-                            _dayButton('S', 'Sabtu'),
-                            _dayButton('M', 'Minggu'),
+                            _buildDayFilter('S', 'Senin'),
+                            _buildDayFilter('S', 'Selasa'),
+                            _buildDayFilter('R', 'Rabu'),
+                            _buildDayFilter('K', 'Kamis'),
+                            _buildDayFilter('J', 'Jumat'),
+                            _buildDayFilter('S', 'Sabtu'),
+                            _buildDayFilter('M', 'Minggu'),
                           ],
                         ),
                       ),
@@ -289,29 +335,36 @@ class _SchedulePageState extends State<SchedulePage> {
     );
   }
 
-  Widget _dayButton(String abbreviation, String fullDay) {
+  Widget _buildDayFilter(String abbreviation, String fullDay) {
     bool isSelected = selectedDay == fullDay;
-    return InkWell(
-      onTap: () {
-        setState(() {
-          selectedDay = fullDay;
-        });
-      },
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: !isSelected ? Border.all(color: Colors.white, width: 1) : null,
-        ),
-        child: Center(
-          child: Text(
-            abbreviation,
-            style: TextStyle(
-              color: isSelected ? const Color(0xFF2B4865) : Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            selectedDay = fullDay;
+            // Reset dan jalankan animasi lagi
+            _animationController.reset();
+            _animationController.forward();
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: !isSelected ? Border.all(color: Colors.white, width: 1) : null,
+          ),
+          child: Center(
+            child: Text(
+              abbreviation,
+              style: TextStyle(
+                color: isSelected ? const Color(0xFF2B4865) : Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),
@@ -354,83 +407,105 @@ class _SchedulePageState extends State<SchedulePage> {
     bool isLast = false,
     Jadwal? jadwal,
   }) =>
-      Container(
-        margin: EdgeInsets.only(bottom: isLast ? 0 : 24),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
+      SlideTransition(
+        position: _slideAnimation,
+        child: ScaleTransition(
+          scale: _scaleAnimation,
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: Container(
+              margin: EdgeInsets.only(bottom: isLast ? 0 : 24),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              width: double.infinity,
               decoration: BoxDecoration(
-                color: const Color(0xFF4A7B97).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              child: const Icon(
-                Icons.video_camera_front_rounded,
-                color: Color(0xFF4A7B97),
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Text(
-                    subject,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF2B4865),
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4A7B97).withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.video_camera_front_rounded,
+                      color: Color(0xFF4A7B97),
+                      size: 24,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Dosen: $lecturer",
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          subject,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2B4865),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "Dosen: $lecturer",
+                          style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                        ),
+                        Text(
+                          duration,
+                          style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                        ),
+                        Text(
+                          room,
+                          style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                        ),
+                      ],
+                    ),
                   ),
-                  Text(
-                    duration,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  ),
-                  Text(
-                    room,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  InkWell(
+                    onTap: jadwal != null
+                        ? () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    EditSchedulePage(jadwal: jadwal),
+                              ),
+                            );
+                            if (result == true) {
+                              setState(() {
+                                // Reset dan jalankan animasi lagi
+                                _animationController.reset();
+                                _animationController.forward();
+                              });
+                            }
+                          }
+                        : null,
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2B4865),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.edit_rounded,
+                          color: Colors.white, size: 18),
+                    ),
                   ),
                 ],
               ),
             ),
-            InkWell(
-              onTap: jadwal != null
-                  ? () async {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EditSchedulePage(jadwal: jadwal),
-                        ),
-                      );
-                      if (result == true) {
-                        setState(() {}); // Refresh halaman setelah edit
-                      }
-                    }
-                  : null,
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2B4865),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.edit_rounded, color: Colors.white, size: 18),
-              ),
-            ),
-          ],
+          ),
         ),
       );
 
