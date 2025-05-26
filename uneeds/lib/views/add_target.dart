@@ -452,15 +452,21 @@ class _AddTargetPageState extends State<AddTargetPage> {
                         // Simpan target
                         bool success = await _databaseService.addTargetPersonal(
                           _namaTargetController.text,
+                          _selectedJenisTarget,
                           _deadlineController.text,
+                          _timeController.text,
                         );
 
                         if (success) {
+                          // Get target yang baru saja dibuat
+                          final targets = await _databaseService.getAllTargets();
+                          final targetId = targets.last.id!;
+
                           // Simpan list capaian
                           for (var controller in _listControllers) {
                             if (controller.text.isNotEmpty) {
                               await _databaseService.addCapaianTarget(
-                                1, // TODO: Get actual target ID
+                                targetId,
                                 controller.text,
                                 0, // 0 = belum selesai
                               );

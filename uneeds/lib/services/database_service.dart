@@ -58,7 +58,7 @@ class DatabaseService {
     final databasePath = join(databaseDirPath, "uneeds.db");
     final database = await openDatabase(
       databasePath,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE $tableJadwal (
@@ -74,19 +74,23 @@ class DatabaseService {
           )''');
         await db.execute('''
           CREATE TABLE $tableTargetPersonal (
-            id_target INTEGER PRIMARY KEY AUTOINCREMENT,
-            judul_target VARCHAR NOT NULL,
-            deadline VARCHAR NOT NULL,
-            createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nama_target VARCHAR NOT NULL,
+            jenis_target VARCHAR NOT NULL,
+            tanggal_target VARCHAR NOT NULL,
+            waktu_target VARCHAR NOT NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
           )''');
         await db.execute('''
           CREATE TABLE $tableCapaian (
-            id_capaian INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             id_target INTEGER NOT NULL,
-            deskripsi VARCHAR NOT NULL,
-            status INTEGER NOT NULL,
-            createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (id_target) REFERENCES $tableTargetPersonal(id_target) ON DELETE CASCADE
+            deskripsi_capaian VARCHAR NOT NULL,
+            status INTEGER NOT NULL DEFAULT 0,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (id_target) REFERENCES $tableTargetPersonal(id) ON DELETE CASCADE
           )''');
         await db.execute('''
           CREATE TABLE $tableCatatanMateri (
@@ -111,9 +115,35 @@ class DatabaseService {
             username VARCHAR NOT NULL
           )''');
       },
-      // onUpgrade: (db, oldVersion, newVersion) async {
-      //   // Lakukan migrasi skema di sini jika diperlukan
-      // },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          // Drop tabel lama
+          await db.execute('DROP TABLE IF EXISTS $tableTargetPersonal');
+          await db.execute('DROP TABLE IF EXISTS $tableCapaian');
+
+          // Buat tabel baru
+          await db.execute('''
+            CREATE TABLE $tableTargetPersonal (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              nama_target VARCHAR NOT NULL,
+              jenis_target VARCHAR NOT NULL,
+              tanggal_target VARCHAR NOT NULL,
+              waktu_target VARCHAR NOT NULL,
+              created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )''');
+          await db.execute('''
+            CREATE TABLE $tableCapaian (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              id_target INTEGER NOT NULL,
+              deskripsi_capaian VARCHAR NOT NULL,
+              status INTEGER NOT NULL DEFAULT 0,
+              created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              FOREIGN KEY (id_target) REFERENCES $tableTargetPersonal(id) ON DELETE CASCADE
+            )''');
+        }
+      },
     );
     return database;
   }
@@ -306,16 +336,30 @@ class DatabaseService {
   /* Controller Target Personal */
 
   // Add Target Personal
-  Future<bool> addTargetPersonal(String judulTarget, String deadline) async {
+  Future<bool> addTargetPersonal(
+    String namaTarget,
+    String jenisTarget,
+    String tanggalTarget,
+    String waktuTarget,
+  ) async {
     try {
       final db = await database;
-      await db.insert(tableTargetPersonal, {
-        columnJudulTargetPersonal: judulTarget,
-        columnDeadlineTargetPersonal: deadline,
-      });
-      return true;
+      final now = DateTime.now().toIso8601String();
+      
+      final id = await db.insert(
+        tableTargetPersonal,
+        {
+          'nama_target': namaTarget,
+          'jenis_target': jenisTarget,
+          'tanggal_target': tanggalTarget,
+          'waktu_target': waktuTarget,
+          'created_at': now,
+          'updated_at': now,
+        },
+      );
+      return id > 0;
     } catch (e) {
-      print('Error adding Target Personal: $e');
+      print('Error adding target: $e');
       return false;
     }
   }
@@ -323,70 +367,77 @@ class DatabaseService {
   // Add Capaian Target personal
   Future<bool> addCapaianTarget(
     int idTarget,
-    String deskripsi,
+    String deskripsiCapaian,
     int status,
   ) async {
     try {
       final db = await database;
-      await db.insert(tableCapaian, {
-        columnIdTarget: idTarget,
-        columnDeskripsiCapaian: deskripsi,
-        columnStatusCapaian: status,
-      });
-      return true;
+      final now = DateTime.now().toIso8601String();
+      
+      final id = await db.insert(
+        tableCapaian,
+        {
+          'id_target': idTarget,
+          'deskripsi_capaian': deskripsiCapaian,
+          'status': status,
+          'created_at': now,
+          'updated_at': now,
+        },
+      );
+      return id > 0;
     } catch (e) {
-      print('Error adding Capaian Target Personal: $e');
+      print('Error adding capaian: $e');
       return false;
     }
   }
 
   // Get Data Target
   Future<List<TargetPersonal>> getTargetPersonal() async {
-    try {
-      final db = await database;
-      final data = await db.query(tableTargetPersonal);
-      List<TargetPersonal> targetList =
-          data
-              .map(
-                (e) => TargetPersonal(
-                  judulTarget: e["judul_target"] as String,
-                  deadline: e["deadline"] as String,
-                ),
-              )
-              .toList();
-
-      return targetList;
-    } catch (e) {
-      print('Error getting Target Personal List: $e');
-      return [];
-    }
+    return getAllTargets();
   }
 
   // Get Capaian Target Personal
   Future<List<CapaianTarget>> getCapaianTargetPersonal(int idTarget) async {
+    return getCapaianByTargetId(idTarget);
+  }
+
+  // Target Personal Methods
+  Future<List<TargetPersonal>> getAllTargets() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(tableTargetPersonal);
+    return List.generate(maps.length, (i) {
+      return TargetPersonal.fromMap(maps[i]);
+    });
+  }
+
+  Future<List<CapaianTarget>> getCapaianByTargetId(int targetId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableCapaian,
+      where: 'id_target = ?',
+      whereArgs: [targetId],
+    );
+    return List.generate(maps.length, (i) {
+      return CapaianTarget.fromMap(maps[i]);
+    });
+  }
+
+  Future<bool> updateCapaianStatus(int capaianId, int newStatus) async {
     try {
       final db = await database;
-      final List<Map<String, dynamic>> data = await db.query(
+      await db.update(
         tableCapaian,
-        where: 'id_target = ?',
-        whereArgs: [
-          idTarget, //Protect From SQL Injection
-        ],
+        {
+          'status': newStatus, 
+          'updated_at': DateTime.now().toIso8601String()
+        },
+        where: 'id = ?',
+        whereArgs: [capaianId],
       );
-      List<CapaianTarget> capaianTarget =
-          data
-              .map(
-                (e) => CapaianTarget(
-                  idTarget: idTarget,
-                  deskripsiCapaian: e["deskripsi"] as String,
-                ),
-              )
-              .toList();
-
-      return capaianTarget;
+      return true;
     } catch (e) {
-      print('Error getting Capaian Target Personal: $e');
-      return [];
+      print('Error updating capaian status: $e');
+      return false;
     }
   }
 
