@@ -10,10 +10,8 @@ import 'package:uneeds/views/schedule_page.dart';
 import 'package:uneeds/views/add_target.dart';
 
 // Models
-import 'package:uneeds/models/target.dart';
 
 // Database Service
-import 'package:uneeds/services/database_service.dart';
 
 class TargetPage extends StatefulWidget {
   const TargetPage({super.key});
@@ -477,7 +475,7 @@ Widget _targetCard({
                     ),
                   ),
                 )
-                .toList(),
+                ,
             // Spacer untuk memberikan ruang antara list dan tombol edit
             const SizedBox(height: 50),
           ],

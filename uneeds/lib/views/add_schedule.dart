@@ -226,12 +226,22 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                 const SizedBox(height: 20),
 
                 // Save Button
-                SizedBox(
+                Container(
                   width: double.infinity,
                   height: 56,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2E7D32).withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
                   child: ElevatedButton.icon(
                     onPressed: _saveSchedule,
-                    icon: const Icon(Icons.save, color: Colors.white),
+                    icon: const Icon(Icons.save_outlined, color: Colors.white),
                     label: const Text(
                       'Simpan Jadwal',
                       style: TextStyle(
@@ -241,7 +251,7 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2B4865),
+                      backgroundColor: const Color(0xFF2E7D32),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -358,8 +368,9 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
             validator: (value) {
               if (value == null || value.isEmpty) return 'Jam harus diisi';
               final hour = int.tryParse(value);
-              if (hour == null || hour < 0 || hour > 23)
+              if (hour == null || hour < 0 || hour > 23) {
                 return 'Jam harus antara 0-23';
+              }
               return null;
             },
           ),
@@ -400,8 +411,9 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
             validator: (value) {
               if (value == null || value.isEmpty) return 'Menit harus diisi';
               final minute = int.tryParse(value);
-              if (minute == null || minute < 0 || minute > 59)
+              if (minute == null || minute < 0 || minute > 59) {
                 return 'Menit harus antara 0-59';
+              }
               return null;
             },
           ),

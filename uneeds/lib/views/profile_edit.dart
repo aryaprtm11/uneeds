@@ -5,7 +5,7 @@ import 'package:uneeds/utils/color.dart';
 import 'package:uneeds/utils/profile_preferences.dart';
 
 class ProfileEdit extends StatefulWidget {
-  const ProfileEdit({Key? key}) : super(key: key);
+  const ProfileEdit({super.key});
 
   @override
   State<ProfileEdit> createState() => _ProfileEditState();
