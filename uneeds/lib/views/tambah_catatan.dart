@@ -1,71 +1,53 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-// import 'package:uneeds/services/database_service.dart'; // Diasumsikan ini ada
 
-// --- Placeholder untuk DatabaseService ---
-// Ganti dengan implementasi DatabaseService Anda yang sebenarnya
-class DatabaseService {
-  DatabaseService._privateConstructor();
-  static final DatabaseService instance = DatabaseService._privateConstructor();
+// Impor DatabaseService Anda yang asli dan Note Model
+import 'package:uneeds/services/database_service.dart'; // Sesuaikan path jika perlu
+import 'package:uneeds/models/note_model.dart'; // Sesuaikan path jika perlu
 
-  Future<void> insertCatatan(
-    String judul,
-    String teks,
-    String? pathGambar,
-  ) async {
-    // Logika untuk menyimpan catatan ke database
-    print('Menyimpan catatan:');
-    print('Judul: $judul');
-    print('Teks: $teks');
-    print('Path Gambar: $pathGambar');
-    await Future.delayed(
-      const Duration(seconds: 1),
-    ); // Simulasi operasi database
-  }
-}
-// --- Akhir Placeholder ---
-
-// --- Definisi Warna Global (Contoh, sesuaikan dengan tema aplikasi Anda) ---
-const Color primaryColor = Color(
-  0xFF2B4865,
-); // Biru gelap dari contoh sebelumnya
-const Color accentColor = Color(0xFF00A8E8); // Biru muda sebagai aksen
+// --- Definisi Warna Global ---
+const Color primaryColor = Color(0xFF2B4865);
+const Color accentColor = Color(0xFF00A8E8);
 const Color scaffoldBackgroundColor = Color(0xFFF5F9FF);
 const Color textColorPrimary = Color(0xFF333333);
 const Color textColorSecondary = Color(0xFF555555);
-const Color saveButtonColor = Color(
-  0xFF2E7D32,
-); // Warna hijau untuk tombol simpan
+const Color saveButtonColor = Color(0xFF2E7D32);
 // --- Akhir Definisi Warna Global ---
 
 class TambahCatatanPage extends StatefulWidget {
-  // Jika Anda ingin halaman ini juga untuk mode edit, tambahkan parameter note
-  // final YourNoteModel? noteToEdit;
-  // const TambahCatatanPage({super.key, this.noteToEdit});
+  final Note? noteToEdit; // Parameter untuk mode edit
 
-  const TambahCatatanPage({super.key});
+  const TambahCatatanPage({super.key, this.noteToEdit}); // Konstruktor diupdate
 
   @override
   State<TambahCatatanPage> createState() => _TambahCatatanPageState();
 }
 
 class _TambahCatatanPageState extends State<TambahCatatanPage> {
-  final _formKey = GlobalKey<FormState>(); // Kunci untuk validasi form
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _judulController = TextEditingController();
   final TextEditingController _catatanController = TextEditingController();
   File? _gambar;
+  String? _initialImagePath; // Untuk menyimpan path gambar awal saat edit
   bool _isLoading = false;
+  bool get _isEditMode =>
+      widget.noteToEdit != null; // Getter untuk cek mode edit
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   if (widget.noteToEdit != null) {
-  //     _judulController.text = widget.noteToEdit!.judul;
-  //     _catatanController.text = widget.noteToEdit!.isi;
-  //     // _gambar = widget.noteToEdit!.gambar != null ? File(widget.noteToEdit!.gambar!) : null;
-  //   }
-  // }
+  @override
+  void initState() {
+    super.initState();
+    if (_isEditMode) {
+      // Jika dalam mode edit, isi field dengan data note yang ada
+      _judulController.text = widget.noteToEdit!.title;
+      _catatanController.text = widget.noteToEdit!.content;
+      if (widget.noteToEdit!.imagePath != null &&
+          widget.noteToEdit!.imagePath!.isNotEmpty) {
+        _gambar = File(widget.noteToEdit!.imagePath!);
+        _initialImagePath = widget.noteToEdit!.imagePath;
+      }
+    }
+  }
 
   Future<void> _pilihGambar(ImageSource source) async {
     if (_isLoading) return;
@@ -150,22 +132,56 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
         _isLoading = true;
       });
 
+      // Tentukan path gambar yang akan disimpan
+      // Jika gambar tidak diubah saat edit, gunakan _initialImagePath
+      // Jika gambar baru dipilih atau gambar lama dihapus, gunakan _gambar?.path
+      String? finalImagePath = _gambar?.path;
+      if (_isEditMode &&
+          _gambar != null &&
+          _gambar!.path == _initialImagePath) {
+        // Jika gambar sama dengan yang awal (tidak diubah)
+        finalImagePath = _initialImagePath;
+      } else if (_isEditMode && _gambar == null && _initialImagePath != null) {
+        // Jika gambar dihapus saat edit
+        finalImagePath = null;
+      }
+
+      final noteUntukDisimpan = Note(
+        id:
+            _isEditMode
+                ? widget.noteToEdit!.id
+                : null, // Sertakan ID jika mode edit
+        title: _judulController.text.trim(),
+        content: _catatanController.text.trim(),
+        imagePath: finalImagePath,
+        createdTime:
+            _isEditMode
+                ? widget.noteToEdit!.createdTime
+                : DateTime.now(), // Pertahankan createdTime asli saat edit
+      );
+
       try {
-        await DatabaseService.instance.insertCatatan(
-          _judulController.text.trim(),
-          _catatanController.text.trim(),
-          _gambar?.path,
-        );
+        if (_isEditMode) {
+          await DatabaseService.instance.updateNote(noteUntukDisimpan);
+        } else {
+          await DatabaseService.instance.addNote(noteUntukDisimpan);
+        }
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Catatan berhasil disimpan."),
-              backgroundColor:
-                  saveButtonColor, // Menggunakan warna tombol simpan untuk sukses
+            SnackBar(
+              content: Text(
+                _isEditMode
+                    ? "Catatan berhasil diperbarui."
+                    : "Catatan berhasil disimpan.",
+              ),
+              backgroundColor: saveButtonColor,
             ),
           );
-          Navigator.pop(context, true); // Kirim 'true' untuk indikasi sukses
+          Navigator.pop(
+            context,
+            true,
+          ); // Kirim 'true' untuk indikasi sukses refresh
         }
       } catch (e) {
         if (mounted) {
@@ -200,8 +216,7 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
-        scrolledUnderElevation:
-            2.0, // Memberi sedikit efek shadow saat di-scroll
+        scrolledUnderElevation: 2.0,
         shadowColor: primaryColor.withOpacity(0.1),
         leading: IconButton(
           icon: const Icon(
@@ -212,29 +227,23 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
           tooltip: "Kembali",
         ),
         title: Text(
-          // widget.noteToEdit == null ? 'Tambah Catatan Baru' : 'Edit Catatan',
-          'Tambah Catatan Baru',
+          _isEditMode
+              ? 'Edit Catatan'
+              : 'Tambah Catatan Baru', // Judul AppBar dinamis
           style: const TextStyle(
             color: primaryColor,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
         ),
-        // Tombol simpan di AppBar dihapus dari sini
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
-          20.0,
-          20.0,
-          20.0,
-          80.0,
-        ), // Tambah padding bawah untuk tombol
+        padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 80.0),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // --- Field Judul ---
               TextFormField(
                 controller: _judulController,
                 style: const TextStyle(
@@ -278,8 +287,6 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 20),
-
-              // --- Field Isi Catatan ---
               TextFormField(
                 controller: _catatanController,
                 maxLines: 8,
@@ -326,8 +333,6 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
                 textInputAction: TextInputAction.newline,
               ),
               const SizedBox(height: 24),
-
-              // --- Pilihan Gambar ---
               Text(
                 "Tambahkan Gambar (Opsional)",
                 style: TextStyle(
@@ -416,31 +421,31 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
                           ),
                 ),
               ),
-              const SizedBox(height: 30), // Jarak sebelum tombol simpan
-              // --- Tombol Simpan ---
+              const SizedBox(height: 30),
               _isLoading
                   ? const Center(
                     child: CircularProgressIndicator(color: saveButtonColor),
                   )
                   : SizedBox(
-                    width: double.infinity, // Tombol memenuhi lebar
+                    width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: _simpanCatatan,
                       icon: const Icon(
                         Icons.save_alt_rounded,
                         color: Colors.white,
                       ),
-                      label: const Text(
-                        "Simpan Catatan",
-                        style: TextStyle(
+                      label: Text(
+                        _isEditMode
+                            ? "Update Catatan"
+                            : "Simpan Catatan", // Teks tombol dinamis
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            saveButtonColor, // Warna hijau yang diminta
+                        backgroundColor: saveButtonColor,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -450,7 +455,6 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
                       ),
                     ),
                   ),
-              // SizedBox tambahan di bawah tidak begitu diperlukan karena SingleChildScrollView punya padding bawah
             ],
           ),
         ),
