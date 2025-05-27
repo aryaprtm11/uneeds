@@ -2,18 +2,16 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-// Impor DatabaseService Anda yang asli dan Note Model
-import 'package:uneeds/services/database_service.dart'; // Sesuaikan path jika perlu
-import 'package:uneeds/models/note_model.dart'; // Sesuaikan path jika perlu
+import 'package:uneeds/services/database_service.dart';
+import 'package:uneeds/models/note_model.dart';
 
-// --- Definisi Warna Global ---
+// efinisi Warna Global
 const Color primaryColor = Color(0xFF2B4865);
 const Color accentColor = Color(0xFF00A8E8);
 const Color scaffoldBackgroundColor = Color(0xFFF5F9FF);
 const Color textColorPrimary = Color(0xFF333333);
 const Color textColorSecondary = Color(0xFF555555);
 const Color saveButtonColor = Color(0xFF2E7D32);
-// --- Akhir Definisi Warna Global ---
 
 class TambahCatatanPage extends StatefulWidget {
   final Note? noteToEdit; // Parameter untuk mode edit
@@ -131,10 +129,6 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
       setState(() {
         _isLoading = true;
       });
-
-      // Tentukan path gambar yang akan disimpan
-      // Jika gambar tidak diubah saat edit, gunakan _initialImagePath
-      // Jika gambar baru dipilih atau gambar lama dihapus, gunakan _gambar?.path
       String? finalImagePath = _gambar?.path;
       if (_isEditMode &&
           _gambar != null &&
@@ -178,10 +172,7 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
               backgroundColor: saveButtonColor,
             ),
           );
-          Navigator.pop(
-            context,
-            true,
-          ); // Kirim 'true' untuk indikasi sukses refresh
+          Navigator.pop(context, true);
         }
       } catch (e) {
         if (mounted) {
@@ -227,9 +218,7 @@ class _TambahCatatanPageState extends State<TambahCatatanPage> {
           tooltip: "Kembali",
         ),
         title: Text(
-          _isEditMode
-              ? 'Edit Catatan'
-              : 'Tambah Catatan Baru', // Judul AppBar dinamis
+          _isEditMode ? 'Edit Catatan' : 'Tambah Catatan Baru',
           style: const TextStyle(
             color: primaryColor,
             fontWeight: FontWeight.bold,

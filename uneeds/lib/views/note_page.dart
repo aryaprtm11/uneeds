@@ -1,15 +1,15 @@
-import 'dart:io'; // Untuk File (menampilkan gambar)
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Untuk format tanggal
+import 'package:intl/intl.dart';
 
 // Models
-import 'package:uneeds/models/note_model.dart'; // Sesuaikan path jika perlu
+import 'package:uneeds/models/note_model.dart';
 
 // Services
-import 'package:uneeds/services/database_service.dart'; // <- PERUBAHAN DI SINI
+import 'package:uneeds/services/database_service.dart';
 
 // Utils
-import 'package:uneeds/utils/color.dart'; // Asumsi primaryBlueColor dari sini
+import 'package:uneeds/utils/color.dart';
 
 // Views
 import 'package:uneeds/views/home_page.dart';
@@ -18,7 +18,6 @@ import 'package:uneeds/views/schedule_page.dart';
 import 'package:uneeds/views/tambah_catatan.dart';
 import 'package:uneeds/views/target_page.dart';
 
-// const Color primaryBlueColor = Color(0xFF2B4865); // Jika tidak diimpor dari utils/color.dart
 const Color cardColor1 = Color(0xFF2B4865); // Warna kartu ganjil
 const Color cardColor2 = Color(0xFF4A7B97); // Warna kartu genap
 
@@ -59,7 +58,7 @@ class _NotePageState extends State<NotePage> {
     final data = await DatabaseService.instance.getAllNotes();
     setState(() {
       _notes = data;
-      _filterNotes(); // Terapkan filter setelah refresh
+      _filterNotes();
       _isLoading = false;
     });
   }
@@ -148,9 +147,7 @@ class _NotePageState extends State<NotePage> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: const Color(
-        0xFFF5F9FF,
-      ), // Pastikan ini sesuai dengan scaffoldBackgroundColor Anda jika ada
+      backgroundColor: const Color(0xFFF5F9FF),
       body: Column(
         children: [
           Expanded(
@@ -158,7 +155,7 @@ class _NotePageState extends State<NotePage> {
               bottom: false,
               child: RefreshIndicator(
                 onRefresh: _refreshNotes,
-                color: primaryBlueColor, // Dari utils/color.dart
+                color: primaryBlueColor,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Padding(
@@ -192,8 +189,7 @@ class _NotePageState extends State<NotePage> {
                                 ),
                               ),
                               style: FilledButton.styleFrom(
-                                backgroundColor:
-                                    primaryBlueColor, // Dari utils/color.dart
+                                backgroundColor: primaryBlueColor,
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 16,
@@ -258,7 +254,7 @@ class _NotePageState extends State<NotePage> {
                                 padding: EdgeInsets.all(32.0),
                                 child: CircularProgressIndicator(
                                   color: primaryColor,
-                                ), // Dari utils/color.dart
+                                ),
                               ),
                             )
                             : _filteredNotes.isEmpty
@@ -278,7 +274,7 @@ class _NotePageState extends State<NotePage> {
                                     Text(
                                       _searchController.text.isEmpty &&
                                               _notes.isEmpty
-                                          ? 'Belum ada catatan.\nAyo buat yang pertama!'
+                                          ? 'Belum ada catatan'
                                           : 'Tidak ada catatan ditemukan.',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
@@ -308,7 +304,6 @@ class _NotePageState extends State<NotePage> {
                                   color:
                                       index % 2 == 0 ? cardColor1 : cardColor2,
                                   onTap: () {
-                                    // <<<---- UBAH INI
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -317,16 +312,13 @@ class _NotePageState extends State<NotePage> {
                                                 NoteDetailPage(note: note),
                                       ),
                                     ).then((value) {
-                                      // Jika NoteDetailPage memberi sinyal untuk refresh (misalnya setelah edit dari sana)
+                                      // Jika NoteDetailPage memberi sinyal untuk refresh (misalnya setelah edit dari detail)
                                       if (value == true) {
                                         _refreshNotes();
                                       }
                                     });
                                   },
-                                  onEdit:
-                                      () => _navigateToEditCatatan(
-                                        note,
-                                      ), // Ini tetap bisa langsung ke edit
+                                  onEdit: () => _navigateToEditCatatan(note),
                                   onDelete: () => _deleteNote(note.id!),
                                 );
                               },
@@ -361,9 +353,7 @@ class _NotePageState extends State<NotePage> {
                     borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
-                        color: primaryBlueColor.withOpacity(
-                          0.1,
-                        ), // Dari utils/color.dart
+                        color: primaryBlueColor.withOpacity(0.1),
                         spreadRadius: 0,
                         blurRadius: 15,
                         offset: const Offset(0, 5),
@@ -411,13 +401,11 @@ class _NotePageState extends State<NotePage> {
                     width: 55,
                     height: 55,
                     decoration: BoxDecoration(
-                      color: primaryBlueColor, // Dari utils/color.dart
+                      color: primaryBlueColor,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: primaryBlueColor.withOpacity(
-                            0.3,
-                          ), // Dari utils/color.dart
+                          color: primaryBlueColor.withOpacity(0.3),
                           spreadRadius: 1,
                           blurRadius: 10,
                           offset: const Offset(0, 3),
@@ -502,7 +490,7 @@ class _NotePageState extends State<NotePage> {
             Text(
               DateFormat(
                 'dd MMM yyyy, HH:mm',
-              ).format(note.createdTime), // Format tanggal lebih lengkap
+              ).format(note.createdTime), // Format tanggal lengkap
               style: TextStyle(
                 color: Colors.white.withOpacity(0.75),
                 fontSize: 11,
@@ -605,20 +593,12 @@ class _NotePageState extends State<NotePage> {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color:
-                isActive
-                    ? primaryBlueColor
-                    : Colors.transparent, // Dari utils/color.dart
+            color: isActive ? primaryBlueColor : Colors.transparent,
             shape: BoxShape.circle,
           ),
           child: Icon(
             icon,
-            color:
-                isActive
-                    ? Colors.white
-                    : primaryBlueColor.withOpacity(
-                      0.8,
-                    ), // Dari utils/color.dart
+            color: isActive ? Colors.white : primaryBlueColor.withOpacity(0.8),
             size: 26,
           ),
         ),

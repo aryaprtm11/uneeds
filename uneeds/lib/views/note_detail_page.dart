@@ -24,7 +24,6 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
 
   Future<void> _navigateToEditPage() async {
     final resultFromEdit = await Navigator.push(
-      // 'result' diganti nama jadi 'resultFromEdit'
       context,
       MaterialPageRoute(
         builder: (context) => TambahCatatanPage(noteToEdit: _currentNote),
@@ -32,9 +31,6 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     );
 
     if (resultFromEdit == true && mounted) {
-      // **INI BAGIAN PENTING YANG DIPERBAIKI/DIAKTIFKAN**
-      // Memberi sinyal kembali ke NotePage bahwa ada perubahan dan halaman ini (NoteDetailPage)
-      // harus ditutup (pop) agar NotePage bisa mengambil alih dan me-refresh daftarnya.
       Navigator.pop(context, true);
     }
   }
@@ -42,39 +38,28 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(
-        0xFFF5F9FF,
-      ), // Anda bisa gunakan scaffoldBackgroundColor dari utils/color.dart jika ada
+      backgroundColor: const Color(0xFFF5F9FF),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color:
-                primaryColor, // Menggunakan primaryColor dari utils/color.dart
+            color: primaryColor,
           ),
-          onPressed:
-              () =>
-                  Navigator.of(
-                    context,
-                  ).pop(), // Default pop jika tidak ada perubahan
+          onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           _currentNote.title.isNotEmpty ? _currentNote.title : "Detail Catatan",
           style: const TextStyle(
-            color:
-                primaryColor, // Menggunakan primaryColor dari utils/color.dart
+            color: primaryColor,
             fontWeight: FontWeight.bold,
           ),
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
           IconButton(
-            icon: const Icon(
-              Icons.edit_outlined,
-              color: primaryColor,
-            ), // Menggunakan primaryColor
+            icon: const Icon(Icons.edit_outlined, color: primaryColor), //
             tooltip: "Edit Catatan",
             onPressed: _navigateToEditPage,
           ),
@@ -90,9 +75,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Color(
-                  0xFF333333,
-                ), // Anda bisa gunakan textColorPrimary dari utils/color.dart jika ada
+                color: Color(0xFF333333),
               ),
             ),
             const SizedBox(height: 8),
@@ -100,9 +83,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
               "Dibuat pada: ${DateFormat('EEEE, dd MMM yyyy, HH:mm', 'id_ID').format(_currentNote.createdTime)}",
               style: TextStyle(
                 fontSize: 13,
-                color:
-                    Colors
-                        .grey[600], // Anda bisa gunakan textColorSecondary dari utils/color.dart jika ada
+                color: Colors.grey[600],
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -145,9 +126,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
               style: const TextStyle(
                 fontSize: 16,
                 height: 1.6,
-                color: Color(
-                  0xFF444444,
-                ), // Sedikit lebih gelap dari textColorSecondary standar
+                color: Color(0xFF444444),
               ),
             ),
             const SizedBox(height: 20),
