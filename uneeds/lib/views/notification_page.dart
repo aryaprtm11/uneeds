@@ -55,7 +55,8 @@ class NotificationPage extends StatelessWidget {
                   _notificationCard(
                     title: 'Target Beasiswa Bank Indonesia',
                     subtitle: 'Hampir Tenggat Waktu!',
-                    description: 'Segera tuntaskan list anda agar target selesai',
+                    description:
+                        'Segera tuntaskan list anda agar target selesai',
                     time: '5m lalu',
                     isRead: false,
                   ),
@@ -63,7 +64,8 @@ class NotificationPage extends StatelessWidget {
                   _notificationCard(
                     title: 'Target Beasiswa Bank Indonesia',
                     subtitle: 'Hampir Tenggat Waktu!',
-                    description: 'Segera tuntaskan list anda agar target selesai',
+                    description:
+                        'Segera tuntaskan list anda agar target selesai',
                     time: '5m lalu',
                     isRead: true,
                   ),
@@ -105,9 +107,10 @@ class NotificationPage extends StatelessWidget {
             decoration: BoxDecoration(
               color: isRead ? Colors.white : const Color(0xFF2B4865),
               shape: BoxShape.circle,
-              border: isRead
-                  ? Border.all(color: const Color(0xFF2B4865), width: 2)
-                  : null,
+              border:
+                  isRead
+                      ? Border.all(color: const Color(0xFF2B4865), width: 2)
+                      : null,
             ),
             child: Icon(
               Icons.notifications_outlined,
@@ -160,4 +163,4 @@ class NotificationPage extends StatelessWidget {
       ),
     );
   }
-} 
+}

@@ -5,7 +5,7 @@ import 'package:uneeds/utils/color.dart';
 // Views
 import 'package:uneeds/views/home_page.dart';
 import 'package:uneeds/views/schedule_page.dart';
-import 'package:uneeds/views/add_schedule.dart';
+import 'package:uneeds/views/tambah_catatan.dart';
 import 'package:uneeds/views/target_page.dart';
 
 class NotePage extends StatefulWidget {
@@ -56,7 +56,7 @@ class _NotePageState extends State<NotePage> {
                                   context,
                                   MaterialPageRoute(
                                     builder:
-                                        (context) => const AddSchedulePage(),
+                                        (context) => const TambahCatatanPage(),
                                   ),
                                 );
                               },
@@ -277,21 +277,15 @@ class _NotePageState extends State<NotePage> {
     );
   }
 
-  // Save Catatan
-  Future<void> _saveCatatan() async {
-    // Implement : Validasi semua field diisi
-    // Implement : try catch -> addCatatan()
-  }
-
-  Widget _navIcon(BuildContext context, IconData icon, Widget page, bool isActive) {
+  Widget _navIcon(
+    BuildContext context,
+    IconData icon,
+    Widget page,
+    bool isActive,
+  ) {
     return InkWell(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => page,
-          ),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => page));
       },
       child: Container(
         width: 50,
