@@ -13,6 +13,7 @@ import 'package:uneeds/utils/color.dart'; // Asumsi primaryBlueColor dari sini
 
 // Views
 import 'package:uneeds/views/home_page.dart';
+import 'package:uneeds/views/note_detail_page.dart';
 import 'package:uneeds/views/schedule_page.dart';
 import 'package:uneeds/views/tambah_catatan.dart';
 import 'package:uneeds/views/target_page.dart';
@@ -297,7 +298,7 @@ class _NotePageState extends State<NotePage> {
                                     crossAxisCount: 2,
                                     crossAxisSpacing: 16,
                                     mainAxisSpacing: 16,
-                                    childAspectRatio: 0.75,
+                                    childAspectRatio: 0.7,
                                   ),
                               itemCount: _filteredNotes.length,
                               itemBuilder: (context, index) {
@@ -307,9 +308,25 @@ class _NotePageState extends State<NotePage> {
                                   color:
                                       index % 2 == 0 ? cardColor1 : cardColor2,
                                   onTap: () {
-                                    _navigateToEditCatatan(note);
+                                    // <<<---- UBAH INI
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) =>
+                                                NoteDetailPage(note: note),
+                                      ),
+                                    ).then((value) {
+                                      // Jika NoteDetailPage memberi sinyal untuk refresh (misalnya setelah edit dari sana)
+                                      if (value == true) {
+                                        _refreshNotes();
+                                      }
+                                    });
                                   },
-                                  onEdit: () => _navigateToEditCatatan(note),
+                                  onEdit:
+                                      () => _navigateToEditCatatan(
+                                        note,
+                                      ), // Ini tetap bisa langsung ke edit
                                   onDelete: () => _deleteNote(note.id!),
                                 );
                               },
