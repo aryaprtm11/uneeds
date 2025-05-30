@@ -1,8 +1,8 @@
 class Note {
-  final int? id; // id akan null saat membuat, tapi ada saat dibaca dari DB
+  final int? id; 
   final String title;
   final String content;
-  final String? imagePath; // Path ke gambar, bisa null
+  final String? imagePath; 
   final DateTime createdTime;
 
   Note({

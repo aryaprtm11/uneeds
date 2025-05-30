@@ -23,7 +23,8 @@ class SchedulePage extends StatefulWidget {
   State<SchedulePage> createState() => _SchedulePageState();
 }
 
-class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderStateMixin {
+class _SchedulePageState extends State<SchedulePage>
+    with SingleTickerProviderStateMixin {
   final DatabaseService _databaseService = DatabaseService.instance;
   String selectedDay = 'Senin'; // Default hari yang dipilih
   late AnimationController _animationController;
@@ -50,29 +51,29 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
       duration: const Duration(milliseconds: 800),
     );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.0, 0.5, curve: Curves.easeIn),
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.0, 0.5, curve: Curves.easeIn),
+      ),
+    );
 
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0.5, 0.0),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.2, 0.7, curve: Curves.easeOut),
-    ));
+    ).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.2, 0.7, curve: Curves.easeOut),
+      ),
+    );
 
-    _scaleAnimation = Tween<double>(
-      begin: 0.95,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.4, 1.0, curve: Curves.easeOut),
-    ));
+    _scaleAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.4, 1.0, curve: Curves.easeOut),
+      ),
+    );
 
     // Mulai animasi
     _animationController.forward();
@@ -213,9 +214,12 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
                             } else if (snapshot.hasData &&
                                 snapshot.data!.isNotEmpty) {
                               // Filter jadwal berdasarkan hari yang dipilih
-                              final filteredJadwal = snapshot.data!
-                                  .where((jadwal) => jadwal.hari == selectedDay)
-                                  .toList();
+                              final filteredJadwal =
+                                  snapshot.data!
+                                      .where(
+                                        (jadwal) => jadwal.hari == selectedDay,
+                                      )
+                                      .toList();
 
                               if (filteredJadwal.isEmpty) {
                                 return Center(
@@ -355,7 +359,8 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
           decoration: BoxDecoration(
             color: isSelected ? Colors.white : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
-            border: !isSelected ? Border.all(color: Colors.white, width: 1) : null,
+            border:
+                !isSelected ? Border.all(color: Colors.white, width: 1) : null,
           ),
           child: Center(
             child: Text(
@@ -406,108 +411,111 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
     String room, {
     bool isLast = false,
     Jadwal? jadwal,
-  }) =>
-      SlideTransition(
-        position: _slideAnimation,
-        child: ScaleTransition(
-          scale: _scaleAnimation,
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Container(
-              margin: EdgeInsets.only(bottom: isLast ? 0 : 24),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+  }) => SlideTransition(
+    position: _slideAnimation,
+    child: ScaleTransition(
+      scale: _scaleAnimation,
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: Container(
+          margin: EdgeInsets.only(bottom: isLast ? 0 : 24),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
               ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF4A7B97).withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.video_camera_front_rounded,
-                      color: Color(0xFF4A7B97),
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          subject,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF2B4865),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Dosen: $lecturer",
-                          style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                        ),
-                        Text(
-                          duration,
-                          style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                        ),
-                        Text(
-                          room,
-                          style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                  InkWell(
-                    onTap: jadwal != null
-                        ? () async {
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    EditSchedulePage(jadwal: jadwal),
-                              ),
-                            );
-                            if (result == true) {
-                              setState(() {
-                                // Reset dan jalankan animasi lagi
-                                _animationController.reset();
-                                _animationController.forward();
-                              });
-                            }
-                          }
-                        : null,
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2B4865),
-                        borderRadius: BorderRadius.circular(8),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4A7B97).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.video_camera_front_rounded,
+                  color: Color(0xFF4A7B97),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      subject,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2B4865),
                       ),
-                      child: const Icon(Icons.edit_rounded,
-                          color: Colors.white, size: 18),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      "Dosen: $lecturer",
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    ),
+                    Text(
+                      duration,
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    ),
+                    Text(
+                      room,
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    ),
+                  ],
+                ),
               ),
-            ),
+              InkWell(
+                onTap:
+                    jadwal != null
+                        ? () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => EditSchedulePage(jadwal: jadwal),
+                            ),
+                          );
+                          if (result == true) {
+                            setState(() {
+                              // Reset dan jalankan animasi lagi
+                              _animationController.reset();
+                              _animationController.forward();
+                            });
+                          }
+                        }
+                        : null,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2B4865),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.edit_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-      );
+      ),
+    ),
+  );
 
   Widget _navIcon(
     BuildContext context,

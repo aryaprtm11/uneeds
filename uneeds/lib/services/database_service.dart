@@ -368,7 +368,7 @@ class DatabaseService {
     }
   }
 
-  /* --- Controller Target Personal (TETAP SEPERTI MILIK ANDA) --- */
+  /* --- Controller Target Personal --- */
   Future<bool> addTargetPersonal(
     String namaTarget,
     String jenisTarget,
@@ -459,6 +459,50 @@ class DatabaseService {
       return true;
     } catch (e) {
       print('Error updating capaian status: $e');
+      return false;
+    }
+  }
+
+  Future<bool> updateTargetPersonal(
+    int id,
+    String namaTarget,
+    String jenisTarget,
+    String tanggalTarget,
+    String waktuTarget,
+  ) async {
+    try {
+      final db = await database;
+      final now = DateTime.now().toIso8601String();
+      final count = await db.update(
+        tableTargetPersonal,
+        {
+          'nama_target': namaTarget,
+          'jenis_target': jenisTarget,
+          'tanggal_target': tanggalTarget,
+          'waktu_target': waktuTarget,
+          'updated_at': now,
+        },
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+      return count > 0;
+    } catch (e) {
+      print('Error updating target: $e');
+      return false;
+    }
+  }
+
+  Future<bool> deleteCapaian(int id) async {
+    try {
+      final db = await database;
+      final count = await db.delete(
+        tableCapaian,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+      return count > 0;
+    } catch (e) {
+      print('Error deleting capaian: $e');
       return false;
     }
   }

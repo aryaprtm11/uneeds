@@ -8,6 +8,7 @@ import 'package:uneeds/views/home_page.dart';
 import 'package:uneeds/views/note_page.dart';
 import 'package:uneeds/views/schedule_page.dart';
 import 'package:uneeds/views/add_target.dart';
+import 'package:uneeds/views/edit_target.dart';
 
 // Models
 import 'package:uneeds/models/target.dart';
@@ -22,7 +23,8 @@ class TargetPage extends StatefulWidget {
   State<TargetPage> createState() => _TargetPageState();
 }
 
-class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateMixin {
+class _TargetPageState extends State<TargetPage>
+    with SingleTickerProviderStateMixin {
   final DatabaseService _databaseService = DatabaseService.instance;
   late TabController _tabController;
   List<TargetPersonal> _activeTargets = [];
@@ -49,7 +51,7 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
 
   Future<void> _loadTargets() async {
     if (!mounted) return;
-    
+
     setState(() {
       _isLoading = true;
     });
@@ -57,7 +59,7 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
     try {
       // Load semua target terlebih dahulu
       final targets = await _databaseService.getAllTargets();
-      
+
       if (!mounted) return;
 
       // Memproses capaian untuk setiap target secara parallel
@@ -67,7 +69,7 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
       });
 
       final capaianResults = await Future.wait(futures);
-      
+
       if (!mounted) return;
 
       final activeTargets = <TargetPersonal>[];
@@ -96,7 +98,7 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
     } catch (e) {
       print('Error loading targets: $e');
       if (!mounted) return;
-      
+
       setState(() {
         _isLoading = false;
       });
@@ -112,17 +114,22 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
       });
 
       final newStatus = capaian.status == 0 ? 1 : 0;
-      final success = await _databaseService.updateCapaianStatus(capaian.id!, newStatus);
-      
+      final success = await _databaseService.updateCapaianStatus(
+        capaian.id!,
+        newStatus,
+      );
+
       if (success && mounted) {
         // Update local state first
         final targetId = capaian.idTarget;
-        final capaianList = List<CapaianTarget>.from(_capaianTargets[targetId] ?? []);
+        final capaianList = List<CapaianTarget>.from(
+          _capaianTargets[targetId] ?? [],
+        );
         final index = capaianList.indexWhere((c) => c.id == capaian.id);
-        
+
         if (index != -1) {
           capaianList[index] = capaian.copyWith(status: newStatus);
-          
+
           setState(() {
             _capaianTargets[targetId] = capaianList;
           });
@@ -152,7 +159,7 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
   Widget _buildTargetCard(TargetPersonal target) {
     final capaianList = _capaianTargets[target.id] ?? [];
     final completedCount = capaianList.where((c) => c.status == 1).length;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -245,18 +252,25 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: capaian.status == 1 ? const Color(0xFF2E7D32) : const Color(0xFF2B4865),
+                                color:
+                                    capaian.status == 1
+                                        ? const Color(0xFF2E7D32)
+                                        : const Color(0xFF2B4865),
                                 width: 2,
                               ),
-                              color: capaian.status == 1 ? const Color(0xFF2E7D32) : Colors.white,
+                              color:
+                                  capaian.status == 1
+                                      ? const Color(0xFF2E7D32)
+                                      : Colors.white,
                             ),
-                            child: capaian.status == 1
-                                ? const Icon(
-                                    Icons.check,
-                                    size: 16,
-                                    color: Colors.white,
-                                  )
-                                : null,
+                            child:
+                                capaian.status == 1
+                                    ? const Icon(
+                                      Icons.check,
+                                      size: 16,
+                                      color: Colors.white,
+                                    )
+                                    : null,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -266,8 +280,14 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
                                 capaian.deskripsiCapaian,
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: capaian.status == 1 ? Colors.grey : Colors.black87,
-                                  decoration: capaian.status == 1 ? TextDecoration.lineThrough : null,
+                                  color:
+                                      capaian.status == 1
+                                          ? Colors.grey
+                                          : Colors.black87,
+                                  decoration:
+                                      capaian.status == 1
+                                          ? TextDecoration.lineThrough
+                                          : null,
                                 ),
                               ),
                             ),
@@ -284,12 +304,15 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
             top: 8,
             right: 8,
             child: IconButton(
-              icon: const Icon(
-                Icons.edit,
-                color: Color(0xFF2B4865),
-              ),
+              icon: const Icon(Icons.edit, color: Color(0xFF2B4865)),
               onPressed: () {
                 // TODO: Implement edit functionality
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditTargetPage(target: target),
+                  ),
+                );
               },
             ),
           ),
@@ -358,7 +381,9 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
                                       final result = await Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => const AddTargetPage(),
+                                          builder:
+                                              (context) =>
+                                                  const AddTargetPage(),
                                         ),
                                       );
                                       if (result == true) {
@@ -406,7 +431,8 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
                                         vertical: 16,
                                       ),
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Container(
                                             width: 48,
@@ -435,7 +461,8 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
                                                 ),
                                               ),
                                               Text(
-                                                _activeTargets.length.toString(),
+                                                _activeTargets.length
+                                                    .toString(),
                                                 style: const TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 32,
@@ -459,7 +486,8 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
                                         vertical: 16,
                                       ),
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Container(
                                             width: 48,
@@ -469,7 +497,8 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
                                               shape: BoxShape.circle,
                                             ),
                                             child: const Icon(
-                                              Icons.check_circle_outline_rounded,
+                                              Icons
+                                                  .check_circle_outline_rounded,
                                               color: Color(0xFF2E7D32),
                                               size: 28,
                                             ),
@@ -488,7 +517,8 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
                                                 ),
                                               ),
                                               Text(
-                                                _completedTargets.length.toString(),
+                                                _completedTargets.length
+                                                    .toString(),
                                                 style: const TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 32,
@@ -533,43 +563,51 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
                         ),
                       ),
                       Expanded(
-                        child: _isLoading
-                            ? const Center(
-                                child: CircularProgressIndicator(
-                                  color: Color(0xFF2B4865),
-                                ),
-                              )
-                            : TabBarView(
-                                controller: _tabController,
-                                physics: const NeverScrollableScrollPhysics(), // Disable swipe
-                                children: [
-                                  // Tab Target Aktif
-                                  _activeTargets.isEmpty
-                                      ? const Center(
+                        child:
+                            _isLoading
+                                ? const Center(
+                                  child: CircularProgressIndicator(
+                                    color: Color(0xFF2B4865),
+                                  ),
+                                )
+                                : TabBarView(
+                                  controller: _tabController,
+                                  physics:
+                                      const NeverScrollableScrollPhysics(), // Disable swipe
+                                  children: [
+                                    // Tab Target Aktif
+                                    _activeTargets.isEmpty
+                                        ? const Center(
                                           child: Text('Belum ada target aktif'),
                                         )
-                                      : ListView.builder(
+                                        : ListView.builder(
                                           padding: const EdgeInsets.all(20),
                                           itemCount: _activeTargets.length,
                                           itemBuilder: (context, index) {
-                                            return _buildTargetCard(_activeTargets[index]);
+                                            return _buildTargetCard(
+                                              _activeTargets[index],
+                                            );
                                           },
                                         ),
 
-                                  // Tab Target Selesai
-                                  _completedTargets.isEmpty
-                                      ? const Center(
-                                          child: Text('Belum ada target selesai'),
+                                    // Tab Target Selesai
+                                    _completedTargets.isEmpty
+                                        ? const Center(
+                                          child: Text(
+                                            'Belum ada target selesai',
+                                          ),
                                         )
-                                      : ListView.builder(
+                                        : ListView.builder(
                                           padding: const EdgeInsets.all(20),
                                           itemCount: _completedTargets.length,
                                           itemBuilder: (context, index) {
-                                            return _buildTargetCard(_completedTargets[index]);
+                                            return _buildTargetCard(
+                                              _completedTargets[index],
+                                            );
                                           },
                                         ),
-                                ],
-                              ),
+                                  ],
+                                ),
                       ),
                     ],
                   ),
@@ -605,8 +643,12 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
                               Navigator.pushReplacement(
                                 context,
                                 PageRouteBuilder(
-                                  pageBuilder: (context, animation, secondaryAnimation) =>
-                                      HomePage(),
+                                  pageBuilder:
+                                      (
+                                        context,
+                                        animation,
+                                        secondaryAnimation,
+                                      ) => HomePage(),
                                   transitionDuration: Duration.zero,
                                   reverseTransitionDuration: Duration.zero,
                                 ),
@@ -623,8 +665,12 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
                               Navigator.pushReplacement(
                                 context,
                                 PageRouteBuilder(
-                                  pageBuilder: (context, animation, secondaryAnimation) =>
-                                      SchedulePage(),
+                                  pageBuilder:
+                                      (
+                                        context,
+                                        animation,
+                                        secondaryAnimation,
+                                      ) => SchedulePage(),
                                   transitionDuration: Duration.zero,
                                   reverseTransitionDuration: Duration.zero,
                                 ),
@@ -641,8 +687,12 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
                               Navigator.pushReplacement(
                                 context,
                                 PageRouteBuilder(
-                                  pageBuilder: (context, animation, secondaryAnimation) =>
-                                      NotePage(),
+                                  pageBuilder:
+                                      (
+                                        context,
+                                        animation,
+                                        secondaryAnimation,
+                                      ) => NotePage(),
                                   transitionDuration: Duration.zero,
                                   reverseTransitionDuration: Duration.zero,
                                 ),
@@ -697,9 +747,7 @@ class _TargetPageState extends State<TargetPage> with SingleTickerProviderStateM
             Container(
               color: Colors.black.withOpacity(0.3),
               child: const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                ),
+                child: CircularProgressIndicator(color: Colors.white),
               ),
             ),
         ],
