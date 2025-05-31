@@ -68,7 +68,7 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F9FF),
+      backgroundColor: const Color(0xFFE6F2FD),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),

@@ -9,6 +9,8 @@ import 'package:uneeds/views/note_page.dart';
 import 'package:uneeds/views/target_page.dart';
 import 'package:uneeds/views/add_schedule.dart';
 import 'package:uneeds/views/edit_schedule.dart';
+import 'package:uneeds/views/add_target.dart';
+import 'package:uneeds/views/tambah_catatan.dart';
 
 // Database Service
 import 'package:uneeds/services/database_service.dart';
@@ -92,12 +94,139 @@ class _SchedulePageState extends State<SchedulePage>
     });
   }
 
+  void _showAddOptionsPopup() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Tambah Data Baru',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2B4865),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _buildPopupOption(
+                  'Tambah Jadwal',
+                  Icons.calendar_today_rounded,
+                  const Color(0xFF4A90E2),
+                  () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddSchedulePage(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildPopupOption(
+                  'Tambah Catatan',
+                  Icons.note_add_rounded,
+                  const Color(0xFF50C878),
+                  () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const TambahCatatanPage(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildPopupOption(
+                  'Tambah Target',
+                  Icons.flag_rounded,
+                  const Color(0xFFFF6B6B),
+                  () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddTargetPage(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPopupOption(String title, IconData icon, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        decoration: BoxDecoration(
+          border: Border.all(color: color.withOpacity(0.3)),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F9FF),
+      backgroundColor: const Color(0xFFE6F2FD),
       body: Column(
         children: [
           Expanded(
@@ -128,15 +257,7 @@ class _SchedulePageState extends State<SchedulePage>
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => const AddSchedulePage(),
-                                  ),
-                                );
-                              },
+                              onPressed: _showAddOptionsPopup,
                               icon: const Icon(
                                 Icons.add_circle_outline,
                                 color: Colors.white,
@@ -329,7 +450,10 @@ class _SchedulePageState extends State<SchedulePage>
                       ),
                     ],
                   ),
-                  child: const Icon(Icons.add, color: Colors.white, size: 30),
+                  child: InkWell(
+                    onTap: _showAddOptionsPopup,
+                    child: const Icon(Icons.add, color: Colors.white, size: 30),
+                  ),
                 ),
               ],
             ),

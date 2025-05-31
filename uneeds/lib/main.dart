@@ -10,10 +10,29 @@ import 'firebase_options.dart';
 import 'package:uneeds/views/onboarding.dart';
 import 'package:uneeds/views/home_page.dart';
 
+// Import service notifikasi
+import 'package:uneeds/services/local_notification_service.dart';
+import 'package:uneeds/services/database_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await initializeDateFormatting('id_ID', null);
+  
+  // Initialize notification service
+  print('🚀 Initializing notification service...');
+  try {
+    await LocalNotificationService().initialize();
+    print('✅ Notification service initialized successfully');
+    
+    // Schedule smart notifications
+    print('📅 Scheduling smart notifications...');
+    await DatabaseService.instance.generateSmartNotifications();
+    print('✅ Smart notifications scheduled successfully');
+  } catch (e) {
+    print('❌ Error initializing notification service: $e');
+  }
+  
   runApp(const MyApp());
 }
 

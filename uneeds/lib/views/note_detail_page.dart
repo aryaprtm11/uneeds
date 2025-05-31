@@ -38,7 +38,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F9FF),
+      backgroundColor: const Color(0xFFE6F2FD),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 // Utils
 import 'package:uneeds/utils/color.dart';
@@ -9,6 +10,8 @@ import 'package:uneeds/views/note_page.dart';
 import 'package:uneeds/views/schedule_page.dart';
 import 'package:uneeds/views/add_target.dart';
 import 'package:uneeds/views/edit_target.dart';
+import 'package:uneeds/views/add_schedule.dart';
+import 'package:uneeds/views/tambah_catatan.dart';
 
 // Models
 import 'package:uneeds/models/target.dart';
@@ -39,7 +42,7 @@ class _TargetPageState extends State<TargetPage>
     _tabController = TabController(length: 2, vsync: this);
     // Memulai loading data setelah frame pertama selesai dirender
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadTargets();
+      _loadTargetsOptimized();
     });
   }
 
@@ -49,37 +52,78 @@ class _TargetPageState extends State<TargetPage>
     super.dispose();
   }
 
-  Future<void> _loadTargets() async {
-    if (!mounted) return;
+  // Fungsi helper untuk memproses capaian dalam batch kecil
+  Future<Map<int, List<CapaianTarget>>> _loadCapaianInBatches(
+    List<TargetPersonal> targets,
+  ) async {
+    const batchSize = 3; // Membatasi hanya 3 operasi database bersamaan
+    final capaianMap = <int, List<CapaianTarget>>{};
+    
+    for (int i = 0; i < targets.length; i += batchSize) {
+      if (!mounted) return capaianMap;
+      
+      final batch = targets.skip(i).take(batchSize).toList();
+      final futures = batch.map((target) async {
+        try {
+          final capaian = await _databaseService.getCapaianByTargetId(target.id!);
+          return MapEntry(target.id!, capaian);
+        } catch (e) {
+          print('Error loading capaian for target ${target.id}: $e');
+          return MapEntry(target.id!, <CapaianTarget>[]);
+        }
+      });
 
+      final batchResults = await Future.wait(futures);
+      for (final entry in batchResults) {
+        capaianMap[entry.key] = entry.value;
+      }
+      
+      // Memberikan jeda kecil untuk UI tetap responsif
+      await Future.delayed(const Duration(milliseconds: 10));
+    }
+    
+    return capaianMap;
+  }
+
+  Future<void> _loadTargetsOptimized() async {
+    if (!mounted) return;
+    
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Load semua target terlebih dahulu
+      // Load targets terlebih dahulu
       final targets = await _databaseService.getAllTargets();
-
+      
       if (!mounted) return;
 
-      // Memproses capaian untuk setiap target secara parallel
-      final futures = targets.map((target) async {
-        final capaian = await _databaseService.getCapaianByTargetId(target.id!);
-        return MapEntry(target.id!, capaian);
-      });
+      // Jika tidak ada target, langsung selesai
+      if (targets.isEmpty) {
+        setState(() {
+          _activeTargets = [];
+          _completedTargets = [];
+          _capaianTargets = {};
+          _isLoading = false;
+        });
+        return;
+      }
 
-      final capaianResults = await Future.wait(futures);
-
+      // Load capaian dalam batch kecil untuk menghindari overload
+      final capaianMap = await _loadCapaianInBatches(targets);
+      
       if (!mounted) return;
 
+      // Proses klasifikasi target
       final activeTargets = <TargetPersonal>[];
       final completedTargets = <TargetPersonal>[];
-      final capaianMap = Map.fromEntries(capaianResults);
 
-      // Memproses status target
       for (var target in targets) {
         final capaian = capaianMap[target.id] ?? [];
-        bool isCompleted = capaian.every((c) => c.status == 1);
+        
+        // Target dianggap selesai jika semua capaian completed DAN ada capaian
+        bool isCompleted = capaian.isNotEmpty && capaian.every((c) => c.status == 1);
+        
         if (isCompleted) {
           completedTargets.add(target);
         } else {
@@ -98,7 +142,7 @@ class _TargetPageState extends State<TargetPage>
     } catch (e) {
       print('Error loading targets: $e');
       if (!mounted) return;
-
+      
       setState(() {
         _isLoading = false;
       });
@@ -106,7 +150,7 @@ class _TargetPageState extends State<TargetPage>
   }
 
   Future<void> _toggleCapaian(CapaianTarget capaian) async {
-    if (_isProcessing) return; // Prevent multiple simultaneous updates
+    if (_isProcessing) return;
 
     try {
       setState(() {
@@ -120,7 +164,7 @@ class _TargetPageState extends State<TargetPage>
       );
 
       if (success && mounted) {
-        // Update local state first
+        // Update state lokal tanpa reload database
         final targetId = capaian.idTarget;
         final capaianList = List<CapaianTarget>.from(
           _capaianTargets[targetId] ?? [],
@@ -134,14 +178,29 @@ class _TargetPageState extends State<TargetPage>
             _capaianTargets[targetId] = capaianList;
           });
 
-          // Check if all capaian are completed
-          final allCompleted = capaianList.every((c) => c.status == 1);
+          // Check apakah semua capaian sudah selesai
+          final allCompleted = capaianList.isNotEmpty && 
+                               capaianList.every((c) => c.status == 1);
+          
           if (allCompleted) {
-            final target = _activeTargets.firstWhere((t) => t.id == targetId);
-            setState(() {
-              _activeTargets.remove(target);
-              _completedTargets.add(target);
-            });
+            final targetIndex = _activeTargets.indexWhere((t) => t.id == targetId);
+            if (targetIndex != -1) {
+              final target = _activeTargets[targetIndex];
+              setState(() {
+                _activeTargets.removeAt(targetIndex);
+                _completedTargets.add(target);
+              });
+            }
+          } else {
+            // Jika ada capaian yang belum selesai, pastikan target ada di active
+            final targetIndex = _completedTargets.indexWhere((t) => t.id == targetId);
+            if (targetIndex != -1) {
+              final target = _completedTargets[targetIndex];
+              setState(() {
+                _completedTargets.removeAt(targetIndex);
+                _activeTargets.add(target);
+              });
+            }
           }
         }
       }
@@ -156,9 +215,144 @@ class _TargetPageState extends State<TargetPage>
     }
   }
 
+  // Reload data dengan optimasi
+  Future<void> _refreshData() async {
+    await _loadTargetsOptimized();
+  }
+
+  void _showAddOptionsPopup() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Tambah Data Baru',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2B4865),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _buildPopupOption(
+                  'Tambah Jadwal',
+                  Icons.calendar_today_rounded,
+                  const Color(0xFF4A90E2),
+                  () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddSchedulePage(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildPopupOption(
+                  'Tambah Catatan',
+                  Icons.note_add_rounded,
+                  const Color(0xFF50C878),
+                  () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const TambahCatatanPage(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildPopupOption(
+                  'Tambah Target',
+                  Icons.flag_rounded,
+                  const Color(0xFFFF6B6B),
+                  () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddTargetPage(),
+                      ),
+                    ).then((result) {
+                      if (result == true) {
+                        _refreshData();
+                      }
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPopupOption(String title, IconData icon, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        decoration: BoxDecoration(
+          border: Border.all(color: color.withOpacity(0.3)),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTargetCard(TargetPersonal target) {
     final capaianList = _capaianTargets[target.id] ?? [];
-    final completedCount = capaianList.where((c) => c.status == 1).length;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -195,6 +389,13 @@ class _TargetPageState extends State<TargetPage>
                           width: 24,
                           height: 24,
                           color: Colors.white,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.star,
+                              color: Colors.white,
+                              size: 24,
+                            );
+                          },
                         ),
                       ),
                     ),
@@ -235,68 +436,65 @@ class _TargetPageState extends State<TargetPage>
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: capaianList.length,
-                  itemBuilder: (context, index) {
-                    final capaian = capaianList[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 24,
-                            height: 24,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color:
-                                    capaian.status == 1
+                if (capaianList.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: capaianList.length,
+                    itemBuilder: (context, index) {
+                      final capaian = capaianList[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          children: [
+                            InkWell(
+                              onTap: () => _toggleCapaian(capaian),
+                              child: Container(
+                                width: 24,
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: capaian.status == 1
                                         ? const Color(0xFF2E7D32)
                                         : const Color(0xFF2B4865),
-                                width: 2,
-                              ),
-                              color:
-                                  capaian.status == 1
+                                    width: 2,
+                                  ),
+                                  color: capaian.status == 1
                                       ? const Color(0xFF2E7D32)
                                       : Colors.white,
-                            ),
-                            child:
-                                capaian.status == 1
+                                ),
+                                child: capaian.status == 1
                                     ? const Icon(
-                                      Icons.check,
-                                      size: 16,
-                                      color: Colors.white,
-                                    )
+                                        Icons.check,
+                                        size: 16,
+                                        color: Colors.white,
+                                      )
                                     : null,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: InkWell(
-                              onTap: () => _toggleCapaian(capaian),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
                               child: Text(
                                 capaian.deskripsiCapaian,
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color:
-                                      capaian.status == 1
-                                          ? Colors.grey
-                                          : Colors.black87,
-                                  decoration:
-                                      capaian.status == 1
-                                          ? TextDecoration.lineThrough
-                                          : null,
+                                  color: capaian.status == 1
+                                      ? Colors.grey
+                                      : Colors.black87,
+                                  decoration: capaian.status == 1
+                                      ? TextDecoration.lineThrough
+                                      : null,
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ],
             ),
           ),
@@ -305,14 +503,16 @@ class _TargetPageState extends State<TargetPage>
             right: 8,
             child: IconButton(
               icon: const Icon(Icons.edit, color: Color(0xFF2B4865)),
-              onPressed: () {
-                // TODO: Implement edit functionality
-                Navigator.push(
+              onPressed: () async {
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => EditTargetPage(target: target),
                   ),
                 );
+                if (result == true) {
+                  _refreshData();
+                }
               },
             ),
           ),
@@ -343,7 +543,7 @@ class _TargetPageState extends State<TargetPage>
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F9FF),
+      backgroundColor: const Color(0xFFE6F2FD),
       body: Stack(
         children: [
           Column(
@@ -377,19 +577,7 @@ class _TargetPageState extends State<TargetPage>
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: ElevatedButton.icon(
-                                    onPressed: () async {
-                                      final result = await Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder:
-                                              (context) =>
-                                                  const AddTargetPage(),
-                                        ),
-                                      );
-                                      if (result == true) {
-                                        _loadTargets();
-                                      }
-                                    },
+                                    onPressed: _showAddOptionsPopup,
                                     icon: const Icon(
                                       Icons.add_circle_outline,
                                       color: Colors.white,
@@ -431,8 +619,7 @@ class _TargetPageState extends State<TargetPage>
                                         vertical: 16,
                                       ),
                                       child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                        mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           Container(
                                             width: 48,
@@ -461,8 +648,7 @@ class _TargetPageState extends State<TargetPage>
                                                 ),
                                               ),
                                               Text(
-                                                _activeTargets.length
-                                                    .toString(),
+                                                _activeTargets.length.toString(),
                                                 style: const TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 32,
@@ -486,8 +672,7 @@ class _TargetPageState extends State<TargetPage>
                                         vertical: 16,
                                       ),
                                       child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                        mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           Container(
                                             width: 48,
@@ -497,8 +682,7 @@ class _TargetPageState extends State<TargetPage>
                                               shape: BoxShape.circle,
                                             ),
                                             child: const Icon(
-                                              Icons
-                                                  .check_circle_outline_rounded,
+                                              Icons.check_circle_outline_rounded,
                                               color: Color(0xFF2E7D32),
                                               size: 28,
                                             ),
@@ -517,8 +701,7 @@ class _TargetPageState extends State<TargetPage>
                                                 ),
                                               ),
                                               Text(
-                                                _completedTargets.length
-                                                    .toString(),
+                                                _completedTargets.length.toString(),
                                                 style: const TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 32,
@@ -563,51 +746,43 @@ class _TargetPageState extends State<TargetPage>
                         ),
                       ),
                       Expanded(
-                        child:
-                            _isLoading
-                                ? const Center(
-                                  child: CircularProgressIndicator(
-                                    color: Color(0xFF2B4865),
-                                  ),
-                                )
-                                : TabBarView(
-                                  controller: _tabController,
-                                  physics:
-                                      const NeverScrollableScrollPhysics(), // Disable swipe
-                                  children: [
-                                    // Tab Target Aktif
-                                    _activeTargets.isEmpty
-                                        ? const Center(
+                        child: _isLoading
+                            ? const Center(
+                                child: CircularProgressIndicator(
+                                  color: Color(0xFF2B4865),
+                                ),
+                              )
+                            : TabBarView(
+                                controller: _tabController,
+                                physics: const NeverScrollableScrollPhysics(),
+                                children: [
+                                  // Tab Target Aktif
+                                  _activeTargets.isEmpty
+                                      ? const Center(
                                           child: Text('Belum ada target aktif'),
                                         )
-                                        : ListView.builder(
+                                      : ListView.builder(
                                           padding: const EdgeInsets.all(20),
                                           itemCount: _activeTargets.length,
                                           itemBuilder: (context, index) {
-                                            return _buildTargetCard(
-                                              _activeTargets[index],
-                                            );
+                                            return _buildTargetCard(_activeTargets[index]);
                                           },
                                         ),
 
-                                    // Tab Target Selesai
-                                    _completedTargets.isEmpty
-                                        ? const Center(
-                                          child: Text(
-                                            'Belum ada target selesai',
-                                          ),
+                                  // Tab Target Selesai
+                                  _completedTargets.isEmpty
+                                      ? const Center(
+                                          child: Text('Belum ada target selesai'),
                                         )
-                                        : ListView.builder(
+                                      : ListView.builder(
                                           padding: const EdgeInsets.all(20),
                                           itemCount: _completedTargets.length,
                                           itemBuilder: (context, index) {
-                                            return _buildTargetCard(
-                                              _completedTargets[index],
-                                            );
+                                            return _buildTargetCard(_completedTargets[index]);
                                           },
                                         ),
-                                  ],
-                                ),
+                                ],
+                              ),
                       ),
                     ],
                   ),
@@ -643,12 +818,8 @@ class _TargetPageState extends State<TargetPage>
                               Navigator.pushReplacement(
                                 context,
                                 PageRouteBuilder(
-                                  pageBuilder:
-                                      (
-                                        context,
-                                        animation,
-                                        secondaryAnimation,
-                                      ) => HomePage(),
+                                  pageBuilder: (context, animation, secondaryAnimation) =>
+                                      HomePage(),
                                   transitionDuration: Duration.zero,
                                   reverseTransitionDuration: Duration.zero,
                                 ),
@@ -665,12 +836,8 @@ class _TargetPageState extends State<TargetPage>
                               Navigator.pushReplacement(
                                 context,
                                 PageRouteBuilder(
-                                  pageBuilder:
-                                      (
-                                        context,
-                                        animation,
-                                        secondaryAnimation,
-                                      ) => SchedulePage(),
+                                  pageBuilder: (context, animation, secondaryAnimation) =>
+                                      SchedulePage(),
                                   transitionDuration: Duration.zero,
                                   reverseTransitionDuration: Duration.zero,
                                 ),
@@ -687,12 +854,8 @@ class _TargetPageState extends State<TargetPage>
                               Navigator.pushReplacement(
                                 context,
                                 PageRouteBuilder(
-                                  pageBuilder:
-                                      (
-                                        context,
-                                        animation,
-                                        secondaryAnimation,
-                                      ) => NotePage(),
+                                  pageBuilder: (context, animation, secondaryAnimation) =>
+                                      NotePage(),
                                   transitionDuration: Duration.zero,
                                   reverseTransitionDuration: Duration.zero,
                                 ),
@@ -723,7 +886,7 @@ class _TargetPageState extends State<TargetPage>
                     Container(
                       width: 50,
                       height: 50,
-                      margin: EdgeInsets.only(left: 10),
+                      margin: const EdgeInsets.only(left: 10),
                       decoration: BoxDecoration(
                         color: primaryBlueColor,
                         shape: BoxShape.circle,
@@ -736,7 +899,10 @@ class _TargetPageState extends State<TargetPage>
                           ),
                         ],
                       ),
-                      child: Icon(Icons.add, color: Colors.white, size: 30),
+                      child: InkWell(
+                        onTap: _showAddOptionsPopup,
+                        child: const Icon(Icons.add, color: Colors.white, size: 30),
+                      ),
                     ),
                   ],
                 ),

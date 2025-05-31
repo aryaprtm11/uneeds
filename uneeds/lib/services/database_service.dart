@@ -6,10 +6,15 @@ import 'package:path_provider/path_provider.dart'; // Pastikan ini diimpor
 import 'package:uneeds/models/jadwal.dart'; // Model Anda yang lain
 import 'package:uneeds/models/note_model.dart'; // Model Note kita
 import 'package:uneeds/models/target.dart'; // Model Anda yang lain
+import 'package:uneeds/models/notification.dart'; // Model Notification baru
+
+// Services
+import 'package:uneeds/services/local_notification_service.dart';
 
 class DatabaseService {
   static Database? _database;
   static final DatabaseService instance = DatabaseService._constructor();
+  static final LocalNotificationService _localNotificationService = LocalNotificationService();
 
   DatabaseService._constructor();
 
@@ -22,6 +27,7 @@ class DatabaseService {
   static const String tableGambarCatatan =
       'gambar_catatan'; // Tabel untuk path gambar catatan
   static const String tableUser = 'user';
+  static const String tableNotifications = 'notifications'; // Tabel notifikasi baru
 
   // Kolom Tabel Jadwal (Tidak diubah, tetap seperti milik Anda)
   static const String columnIdJadwal = 'id_jadwal';
@@ -62,7 +68,7 @@ class DatabaseService {
     final databasePath = join(databaseDirPath, "uneeds.db");
     final database = await openDatabase(
       databasePath,
-      version: 2, // Versi database Anda
+      version: 3, // Upgrade version untuk tabel notifikasi
       onCreate: (db, version) async {
         // Tabel Jadwal
         await db.execute('''
@@ -124,6 +130,19 @@ class DatabaseService {
             email VARCHAR NOT NULL,
             username VARCHAR NOT NULL
           )''');
+        // Tabel Notifications (BARU)
+        await db.execute('''
+          CREATE TABLE $tableNotifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title VARCHAR NOT NULL,
+            subtitle VARCHAR NOT NULL,
+            description TEXT NOT NULL,
+            type VARCHAR NOT NULL,
+            related_id INTEGER,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            is_read INTEGER NOT NULL DEFAULT 0,
+            priority VARCHAR NOT NULL DEFAULT 'medium'
+          )''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         // Logika onUpgrade Anda tetap di sini
@@ -153,16 +172,206 @@ class DatabaseService {
               updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
               FOREIGN KEY (id_target) REFERENCES $tableTargetPersonal(id) ON DELETE CASCADE
             )''');
-
-          // Jika ada perubahan skema untuk tabel catatan atau gambar di versi mendatang,
-          // tambahkan logikanya di sini.
-          // Misalnya, jika versi 1 tidak punya tableCatatanMateri atau tableGambarCatatan:
-          // await db.execute(''' CREATE TABLE $tableCatatanMateri (...) ''');
-          // await db.execute(''' CREATE TABLE $tableGambarCatatan (...) ''');
+        }
+        
+        if (oldVersion < 3) {
+          // Tambah tabel notifications jika upgrade dari versi 2
+          await db.execute('''
+            CREATE TABLE $tableNotifications (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              title VARCHAR NOT NULL,
+              subtitle VARCHAR NOT NULL,
+              description TEXT NOT NULL,
+              type VARCHAR NOT NULL,
+              related_id INTEGER,
+              created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              is_read INTEGER NOT NULL DEFAULT 0,
+              priority VARCHAR NOT NULL DEFAULT 'medium'
+            )''');
         }
       },
     );
     return database;
+  }
+
+  /* --- Controller Notifikasi --- */
+  
+  Future<int> addNotification(NotificationModel notification) async {
+    final db = await database;
+    final id = await db.insert(tableNotifications, notification.toMap());
+    
+    // Tampilkan notifikasi HP
+    final notificationWithId = notification.copyWith(id: id);
+    await _localNotificationService.showNotificationFromModel(notificationWithId);
+    
+    return id;
+  }
+
+  Future<List<NotificationModel>> getAllNotifications() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableNotifications,
+      orderBy: 'created_at DESC',
+    );
+    return List.generate(maps.length, (i) {
+      return NotificationModel.fromMap(maps[i]);
+    });
+  }
+
+  Future<List<NotificationModel>> getUnreadNotifications() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableNotifications,
+      where: 'is_read = ?',
+      whereArgs: [0],
+      orderBy: 'created_at DESC',
+    );
+    return List.generate(maps.length, (i) {
+      return NotificationModel.fromMap(maps[i]);
+    });
+  }
+
+  Future<bool> markNotificationAsRead(int notificationId) async {
+    try {
+      final db = await database;
+      await db.update(
+        tableNotifications,
+        {'is_read': 1},
+        where: 'id = ?',
+        whereArgs: [notificationId],
+      );
+      return true;
+    } catch (e) {
+      print('Error marking notification as read: $e');
+      return false;
+    }
+  }
+
+  Future<bool> markAllNotificationsAsRead() async {
+    try {
+      final db = await database;
+      await db.update(
+        tableNotifications,
+        {'is_read': 1},
+        where: 'is_read = ?',
+        whereArgs: [0],
+      );
+      return true;
+    } catch (e) {
+      print('Error marking all notifications as read: $e');
+      return false;
+    }
+  }
+
+  Future<bool> deleteNotification(int notificationId) async {
+    try {
+      final db = await database;
+      await db.delete(
+        tableNotifications,
+        where: 'id = ?',
+        whereArgs: [notificationId],
+      );
+      return true;
+    } catch (e) {
+      print('Error deleting notification: $e');
+      return false;
+    }
+  }
+
+  Future<bool> deleteAllNotifications() async {
+    try {
+      final db = await database;
+      await db.delete(tableNotifications);
+      return true;
+    } catch (e) {
+      print('Error deleting all notifications: $e');
+      return false;
+    }
+  }
+
+  Future<void> generateSmartNotifications() async {
+    try {
+      final targets = await getAllTargets();
+      final schedules = await getJadwal();
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final tomorrow = today.add(const Duration(days: 1));
+
+      // Clear existing scheduled notifications
+      await _localNotificationService.cancelAllNotifications();
+
+      // Schedule notifications untuk setiap target
+      for (var target in targets) {
+        try {
+          final targetDate = DateTime.parse(target.tanggalTarget);
+          final targetDateOnly = DateTime(targetDate.year, targetDate.month, targetDate.day);
+          
+          // Schedule notification 1 hari sebelum deadline (jam 8 pagi)
+          final oneDayBefore = targetDateOnly.subtract(const Duration(days: 1));
+          if (oneDayBefore.isAfter(now)) {
+            final notificationTime = DateTime(oneDayBefore.year, oneDayBefore.month, oneDayBefore.day, 8, 0);
+            
+            await _localNotificationService.scheduleNotification(
+              id: 1000 + (target.id ?? 0),
+              title: 'Deadline Besok!',
+              body: 'Target "${target.namaTarget}" akan berakhir besok. Segera selesaikan!',
+              scheduledDate: notificationTime,
+              payload: 'target:${target.id}',
+              priority: NotificationPriority.high,
+            );
+            
+            print('📅 Scheduled notification for target: ${target.namaTarget} at $notificationTime');
+          }
+          
+          // Schedule notification pada hari deadline (jam 7 pagi)
+          if (targetDateOnly.isAfter(now)) {
+            final deadlineNotificationTime = DateTime(targetDateOnly.year, targetDateOnly.month, targetDateOnly.day, 7, 0);
+            
+            await _localNotificationService.scheduleNotification(
+              id: 2000 + (target.id ?? 0),
+              title: 'Deadline Hari Ini!',
+              body: 'Target "${target.namaTarget}" harus diselesaikan hari ini. Jangan sampai terlewat!',
+              scheduledDate: deadlineNotificationTime,
+              payload: 'target:${target.id}',
+              priority: NotificationPriority.high,
+            );
+            
+            print('📅 Scheduled deadline notification for: ${target.namaTarget} at $deadlineNotificationTime');
+          }
+
+        } catch (e) {
+          print('Error scheduling target notification: $e');
+        }
+      }
+
+      // Schedule daily reminder untuk jadwal kuliah (jam 6 pagi setiap hari)
+      await _localNotificationService.scheduleDailyReminder(
+        id: 9999,
+        title: 'Periksa Jadwal Hari Ini',
+        body: 'Jangan lupa cek jadwal kuliah hari ini di aplikasi Uneeds!',
+        hour: 6,
+        minute: 0,
+        payload: 'daily_schedule_check',
+      );
+
+      print('✅ All smart notifications scheduled successfully');
+
+    } catch (e) {
+      print('Error generating smart notifications: $e');
+    }
+  }
+
+  String _getDayString(int weekday) {
+    switch (weekday) {
+      case 1: return 'Senin';
+      case 2: return 'Selasa';
+      case 3: return 'Rabu';
+      case 4: return 'Kamis';
+      case 5: return 'Jumat';
+      case 6: return 'Sabtu';
+      case 7: return 'Minggu';
+      default: return 'Senin';
+    }
   }
 
   /* --- Controller Catatan Materi --- */

@@ -8,7 +8,7 @@ import 'package:uneeds/models/note_model.dart';
 // efinisi Warna Global
 const Color primaryColor = Color(0xFF2B4865);
 const Color accentColor = Color(0xFF00A8E8);
-const Color scaffoldBackgroundColor = Color(0xFFF5F9FF);
+const Color scaffoldBackgroundColor = Color(0xFFE6F2FD);
 const Color textColorPrimary = Color(0xFF333333);
 const Color textColorSecondary = Color(0xFF555555);
 const Color saveButtonColor = Color(0xFF2E7D32);

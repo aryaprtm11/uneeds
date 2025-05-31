@@ -59,7 +59,7 @@ class _ProfileEditState extends State<ProfileEdit> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: const Color(0xFFE6F2FD),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,

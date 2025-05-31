@@ -17,6 +17,8 @@ import 'package:uneeds/views/note_detail_page.dart';
 import 'package:uneeds/views/schedule_page.dart';
 import 'package:uneeds/views/tambah_catatan.dart';
 import 'package:uneeds/views/target_page.dart';
+import 'package:uneeds/views/add_schedule.dart';
+import 'package:uneeds/views/add_target.dart';
 
 const Color cardColor1 = Color(0xFF2B4865); // Warna kartu ganjil
 const Color cardColor2 = Color(0xFF4A7B97); // Warna kartu genap
@@ -143,11 +145,142 @@ class _NotePageState extends State<NotePage> {
     }
   }
 
+  void _showAddOptionsPopup() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Tambah Data Baru',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2B4865),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _buildPopupOption(
+                  'Tambah Jadwal',
+                  Icons.calendar_today_rounded,
+                  const Color(0xFF4A90E2),
+                  () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddSchedulePage(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildPopupOption(
+                  'Tambah Catatan',
+                  Icons.note_add_rounded,
+                  const Color(0xFF50C878),
+                  () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const TambahCatatanPage(),
+                      ),
+                    ).then((result) {
+                      if (result == true && mounted) {
+                        _refreshNotes();
+                      }
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildPopupOption(
+                  'Tambah Target',
+                  Icons.flag_rounded,
+                  const Color(0xFFFF6B6B),
+                  () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddTargetPage(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPopupOption(String title, IconData icon, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        decoration: BoxDecoration(
+          border: Border.all(color: color.withOpacity(0.3)),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F9FF),
+      backgroundColor: const Color(0xFFE6F2FD),
       body: Column(
         children: [
           Expanded(
@@ -176,7 +309,7 @@ class _NotePageState extends State<NotePage> {
                               ),
                             ),
                             FilledButton.icon(
-                              onPressed: _navigateToTambahCatatan,
+                              onPressed: _showAddOptionsPopup,
                               icon: const Icon(
                                 Icons.add_circle_outline,
                                 size: 22,
@@ -332,86 +465,116 @@ class _NotePageState extends State<NotePage> {
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(
-              bottom:
-                  MediaQuery.of(context).padding.bottom > 0
-                      ? MediaQuery.of(context).padding.bottom
-                      : 20,
-              top: 10,
-              left: 20,
-              right: 20,
-            ),
+            padding: const EdgeInsets.only(bottom: 55),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
                   width: screenWidth * 0.65,
                   height: 60,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(40),
                     boxShadow: [
                       BoxShadow(
-                        color: primaryBlueColor.withOpacity(0.1),
+                        color: const Color(0xFF2B4865).withOpacity(0.15),
                         spreadRadius: 0,
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
+                        blurRadius: 10,
+                        offset: const Offset(0, 0),
                       ),
                     ],
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _navIcon(
-                        context,
-                        Icons.home_rounded,
-                        const HomePage(),
-                        false,
-                        'Home',
+                      InkWell(
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation, secondaryAnimation) =>
+                                  const HomePage(),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
+                          );
+                        },
+                        child: Icon(
+                          Icons.home_rounded,
+                          color: primaryBlueColor,
+                          size: 30,
+                        ),
                       ),
-                      _navIcon(
-                        context,
-                        Icons.calendar_today_rounded,
-                        const SchedulePage(),
-                        false,
-                        'Jadwal',
+                      InkWell(
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation, secondaryAnimation) =>
+                                  const SchedulePage(),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
+                          );
+                        },
+                        child: Icon(
+                          Icons.calendar_today_rounded,
+                          color: primaryBlueColor,
+                          size: 30,
+                        ),
                       ),
-                      _navIcon(
-                        context,
-                        Icons.view_list_rounded,
-                        const NotePage(),
-                        true,
-                        'Catatan',
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: primaryBlueColor,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.view_list_rounded,
+                          color: Colors.white,
+                          size: 30,
+                        ),
                       ),
-                      _navIcon(
-                        context,
-                        Icons.bar_chart_rounded,
-                        const TargetPage(),
-                        false,
-                        'Target',
+                      InkWell(
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation, secondaryAnimation) =>
+                                  const TargetPage(),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
+                          );
+                        },
+                        child: Icon(
+                          Icons.api_rounded,
+                          color: primaryBlueColor,
+                          size: 30,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 10),
-                GestureDetector(
-                  onTap: _navigateToTambahCatatan,
-                  child: Container(
-                    width: 55,
-                    height: 55,
-                    decoration: BoxDecoration(
-                      color: primaryBlueColor,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: primaryBlueColor.withOpacity(0.3),
-                          spreadRadius: 1,
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
+                Container(
+                  width: 50,
+                  height: 50,
+                  margin: const EdgeInsets.only(left: 10),
+                  decoration: BoxDecoration(
+                    color: primaryBlueColor,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryBlueColor.withOpacity(0.25),
+                        spreadRadius: 0,
+                        blurRadius: 10,
+                        offset: const Offset(0, 0),
+                      ),
+                    ],
+                  ),
+                  child: InkWell(
+                    onTap: _showAddOptionsPopup,
                     child: const Icon(Icons.add, color: Colors.white, size: 30),
                   ),
                 ),
@@ -551,56 +714,6 @@ class _NotePageState extends State<NotePage> {
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _navIcon(
-    BuildContext context,
-    IconData icon,
-    Widget page,
-    bool isActive,
-    String tooltipMessage,
-  ) {
-    return Tooltip(
-      message: tooltipMessage,
-      child: InkWell(
-        onTap:
-            isActive
-                ? null
-                : () {
-                  if (page is NotePage && isActive) return;
-                  Navigator.pushReplacement(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder:
-                          (context, animation, secondaryAnimation) => page,
-                      transitionsBuilder: (
-                        context,
-                        animation,
-                        secondaryAnimation,
-                        child,
-                      ) {
-                        return FadeTransition(opacity: animation, child: child);
-                      },
-                      transitionDuration: const Duration(milliseconds: 200),
-                    ),
-                  );
-                },
-        borderRadius: BorderRadius.circular(25),
-        child: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: isActive ? primaryBlueColor : Colors.transparent,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            icon,
-            color: isActive ? Colors.white : primaryBlueColor.withOpacity(0.8),
-            size: 26,
-          ),
         ),
       ),
     );
