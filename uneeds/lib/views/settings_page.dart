@@ -3,6 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uneeds/views/profile_edit.dart';
 import 'package:uneeds/views/onboarding.dart';
+import 'package:uneeds/views/notification_settings_page.dart';
+import 'package:uneeds/views/privacy_policy_page.dart';
+import 'package:uneeds/views/privacy_policy_page2.dart';
 
 class _MenuItem extends StatelessWidget {
   final IconData icon;
@@ -217,21 +220,36 @@ class _SettingPageState extends State<SettingPage> {
               icon: Icons.notifications_none,
               label: 'Notifikasi',
               onTap: () {
-                // untuk notif
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationSettingsPage(),
+                  ),
+                );
               },
             ),
             _MenuItem(
               icon: Icons.description_outlined,
               label: 'Kebijakan pengguna',
               onTap: () {
-                // untuk kebijakan pengguna
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PrivacyPolicyPage(),
+                  ),
+                );
               },
             ),
             _MenuItem(
               icon: Icons.assignment_outlined,
               label: 'Kebijakan privasi',
               onTap: () {
-                // untuk kebijakan privasi
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PrivacyPolicy2Page(),
+                  ),
+                );
               },
             ),
             const SizedBox(height: 20),

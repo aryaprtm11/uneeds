@@ -6,6 +6,8 @@ import 'package:uneeds/views/schedule_page.dart';
 import 'package:uneeds/views/note_page.dart';
 import 'package:uneeds/views/target_page.dart';
 import 'package:uneeds/views/notification_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 
 // Import halaman untuk tambah data
 import 'package:uneeds/views/add_schedule.dart';
@@ -37,6 +39,7 @@ class _HomePageState extends State<HomePage> {
   bool _isScheduleToday = true;
   bool _isLoading = true;
   int _unreadNotificationCount = 0;
+  String? _profileImagePath;
 
   @override
   void initState() {
@@ -53,6 +56,7 @@ class _HomePageState extends State<HomePage> {
     _loadHomeData();
     _initializeNotifications();
     _loadNotificationCount();
+    _loadProfileImage(); // Load profile image
   }
 
   Future<void> _loadHomeData() async {
@@ -298,6 +302,52 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildQuickStat({
+    required IconData icon,
+    required int count,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: color,
+            size: 14,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            count.toString(),
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(width: 2),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildScheduleCard(Jadwal jadwal) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -462,6 +512,39 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Future<void> _loadProfileImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _profileImagePath = prefs.getString('profile_image');
+    });
+  }
+
+  // Fungsi untuk mendapatkan greeting berdasarkan waktu
+  String _getTimeBasedGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return "Selamat Pagi";
+    } else if (hour < 15) {
+      return "Selamat Siang";
+    } else if (hour < 18) {
+      return "Selamat Sore";
+    } else {
+      return "Selamat Malam";
+    }
+  }
+
+  // Fungsi untuk mendapatkan tanggal dalam format Indonesia
+  String _getCurrentDate() {
+    final now = DateTime.now();
+    final days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    final months = [
+      '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+    
+    return '${days[now.weekday % 7]}, ${now.day} ${months[now.month]} ${now.year}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -470,121 +553,295 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Color(0xFFE6F2FD), // Latar belakang biru muda
       body: Column(
         children: [
-          // Header Card
+          // Header Card dengan design yang lebih menarik
           Container(
             width: double.infinity,
-            padding: EdgeInsets.fromLTRB(20, 40, 20, 15),
+            padding: const EdgeInsets.fromLTRB(20, 50, 20, 25),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(25),
-                bottomRight: Radius.circular(25),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white,
+                  Colors.white.withOpacity(0.95),
+                ],
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: Offset(0, 3),
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
                 ),
               ],
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                // Top Row dengan Profile dan Notifications
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "Hello, $firstName!",
-                      style: TextStyle(color: Color(0xFF4A6D8C), fontSize: 16),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      "Beranda",
-                      style: TextStyle(
-                        color: Color(0xFF1F4D70),
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                    // Profile Section
+                    Expanded(
+                      child: Row(
+                        children: [
+                          // Profile Image
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: primaryBlueColor,
+                                width: 2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: primaryBlueColor.withOpacity(0.2),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: ClipOval(
+                              child: _profileImagePath != null && File(_profileImagePath!).existsSync()
+                                  ? Image.file(
+                                      File(_profileImagePath!),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Container(
+                                      color: primaryBlueColor.withOpacity(0.1),
+                                      child: Icon(
+                                        Icons.person,
+                                        color: primaryBlueColor,
+                                        size: 30,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(width: 15),
+                          
+                          // Greeting dan Info
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _getTimeBasedGreeting(),
+                                  style: TextStyle(
+                                    color: Color(0xFF4A6D8C),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  firstName,
+                                  style: TextStyle(
+                                    color: Color(0xFF1F4D70),
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 6,
+                                        height: 6,
+                                        decoration: const BoxDecoration(
+                                          color: Colors.green,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Online',
+                                        style: TextStyle(
+                                          color: Colors.green[700],
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
+                    ),
+                    
+                    // Action Buttons
+                    Row(
+                      children: [
+                        // Notification Button
+                        InkWell(
+                          onTap: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const NotificationPage(),
+                              ),
+                            );
+                            if (result != null) {
+                              _loadNotificationCount();
+                            }
+                          },
+                          child: Container(
+                            width: 45,
+                            height: 45,
+                            decoration: BoxDecoration(
+                              color: primaryBlueColor.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: primaryBlueColor.withOpacity(0.2),
+                                width: 1,
+                              ),
+                            ),
+                            child: Stack(
+                              children: [
+                                Center(
+                                  child: Icon(
+                                    Icons.notifications_outlined,
+                                    color: primaryBlueColor,
+                                    size: 22,
+                                  ),
+                                ),
+                                if (_unreadNotificationCount > 0)
+                                  Positioned(
+                                    right: 8,
+                                    top: 8,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(2),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      constraints: const BoxConstraints(
+                                        minWidth: 16,
+                                        minHeight: 16,
+                                      ),
+                                      child: Text(
+                                        _unreadNotificationCount > 99 
+                                          ? '99+' 
+                                          : _unreadNotificationCount.toString(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        
+                        // Settings Button
+                        InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const SettingPage(),
+                              ),
+                            ).then((_) {
+                              // Reload profile image setelah kembali dari settings
+                              _loadProfileImage();
+                            });
+                          },
+                          child: Container(
+                            width: 45,
+                            height: 45,
+                            decoration: BoxDecoration(
+                              color: primaryBlueColor.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: primaryBlueColor.withOpacity(0.2),
+                                width: 1,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.settings_outlined,
+                              color: primaryBlueColor,
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
+                
+                const SizedBox(height: 20),
+                
+                // Date dan Quick Stats
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // membuka halaman notifikasi
-                    InkWell(
-                      onTap: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const NotificationPage(),
+                    // Date Section
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: primaryBlueColor.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(
+                          color: primaryBlueColor.withOpacity(0.1),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            color: primaryBlueColor,
+                            size: 16,
                           ),
-                        );
-                        // Reload notification count setelah kembali dari halaman notifikasi
-                        if (result != null) {
-                          _loadNotificationCount();
-                        }
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Color(0xFF1F4D70),
-                          shape: BoxShape.circle,
-                        ),
-                        padding: EdgeInsets.all(8),
-                        margin: EdgeInsets.only(right: 10),
-                        child: Stack(
-                          children: [
-                            Icon(Icons.notifications, color: Colors.white),
-                            if (_unreadNotificationCount > 0)
-                              Positioned(
-                                right: 0,
-                                top: 0,
-                                child: Container(
-                                  padding: EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  constraints: BoxConstraints(
-                                    minWidth: 12,
-                                    minHeight: 12,
-                                  ),
-                                  child: Text(
-                                    _unreadNotificationCount > 99 
-                                      ? '99+' 
-                                      : _unreadNotificationCount.toString(),
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 8,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _getCurrentDate(),
+                            style: TextStyle(
+                              color: primaryBlueColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-
-                    // membuka halaman profile
-                    InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SettingPage(),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Color(0xFF1F4D70),
-                          shape: BoxShape.circle,
+                    
+                    // Quick Stats
+                    Row(
+                      children: [
+                        _buildQuickStat(
+                          icon: Icons.schedule,
+                          count: _todaySchedules.length,
+                          label: 'Jadwal',
+                          color: Colors.blue,
                         ),
-                        padding: EdgeInsets.all(8),
-                        child: Icon(Icons.settings, color: Colors.white),
-                      ),
+                        const SizedBox(width: 12),
+                        _buildQuickStat(
+                          icon: Icons.flag,
+                          count: _upcomingTargets.length,
+                          label: 'Target',
+                          color: Colors.orange,
+                        ),
+                      ],
                     ),
                   ],
                 ),
