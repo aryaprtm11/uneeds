@@ -70,8 +70,16 @@ class _HomePageState extends State<HomePage> {
       final tomorrowString = _getDayString(tomorrow.weekday);
 
       setState(() {
-        _todaySchedules = schedules.where((s) => s.hari == todayString).toList();
-        _tomorrowSchedules = schedules.where((s) => s.hari == tomorrowString).toList();
+        // Filter dan urutkan jadwal berdasarkan waktu mulai
+        _todaySchedules = schedules
+            .where((s) => s.hari == todayString)
+            .toList()
+          ..sort((a, b) => _compareTime(a.waktuMulai, b.waktuMulai));
+        
+        _tomorrowSchedules = schedules
+            .where((s) => s.hari == tomorrowString)
+            .toList()
+          ..sort((a, b) => _compareTime(a.waktuMulai, b.waktuMulai));
         
         // Filter target mendatang (belum selesai)
         _upcomingTargets = targets.take(3).toList(); // Ambil 3 target pertama
@@ -118,6 +126,73 @@ class _HomePageState extends State<HomePage> {
   String _getFirstName(String fullName) {
     List<String> nameParts = fullName.trim().split(" ");
     return nameParts[0];
+  }
+
+  // Helper function untuk membandingkan waktu dalam format "HH:mm"
+  int _compareTime(String time1, String time2) {
+    try {
+      final parts1 = time1.split(':');
+      final parts2 = time2.split(':');
+      
+      final hour1 = int.parse(parts1[0]);
+      final minute1 = int.parse(parts1[1]);
+      final hour2 = int.parse(parts2[0]);
+      final minute2 = int.parse(parts2[1]);
+      
+      final totalMinutes1 = hour1 * 60 + minute1;
+      final totalMinutes2 = hour2 * 60 + minute2;
+      
+      return totalMinutes1.compareTo(totalMinutes2);
+    } catch (e) {
+      print('Error comparing time: $e');
+      return 0;
+    }
+  }
+
+  // Helper function untuk mendapatkan icon berdasarkan kategori
+  IconData _getCategoryIcon(String kategori) {
+    switch (kategori.toLowerCase()) {
+      case 'kuliah':
+      case 'lecture':
+        return Icons.school;
+      case 'praktikum':
+      case 'lab':
+        return Icons.computer;
+      case 'tutorial':
+      case 'diskusi':
+        return Icons.group;
+      case 'ujian':
+      case 'uts':
+      case 'uas':
+        return Icons.quiz;
+      case 'seminar':
+        return Icons.mic;
+      default:
+        return Icons.book;
+    }
+  }
+
+  // Helper function untuk mendapatkan warna berdasarkan kategori
+  Color _getCategoryColor(String kategori) {
+    switch (kategori.toLowerCase()) {
+      case 'kuliah':
+      case 'lecture':
+        return primaryBlueColor;
+      case 'praktikum':
+      case 'lab':
+        return const Color(0xFF2E7D32);
+      case 'tutorial':
+      case 'diskusi':
+        return const Color(0xFF1976D2);
+      case 'ujian':
+      case 'uts':
+      case 'uas':
+        return const Color(0xFFD32F2F);
+      case 'seminar':
+        return const Color(0xFF7B1FA2);
+      default:
+        return const Color(0xFF455A64);
+    }
   }
 
   // Method untuk menampilkan popup bubble
@@ -349,6 +424,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildScheduleCard(Jadwal jadwal) {
+    final categoryIcon = _getCategoryIcon(jadwal.kategori);
+    final categoryColor = _getCategoryColor(jadwal.kategori);
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -365,12 +443,18 @@ class _HomePageState extends State<HomePage> {
       ),
       child: Row(
         children: [
+          // Icon kategori dengan warna
           Container(
-            width: 4,
-            height: 60,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: primaryBlueColor,
-              borderRadius: BorderRadius.circular(2),
+              color: categoryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              categoryIcon,
+              color: categoryColor,
+              size: 24,
             ),
           ),
           const SizedBox(width: 12),
@@ -406,6 +490,17 @@ class _HomePageState extends State<HomePage> {
                         color: Colors.grey[500],
                       ),
                     ),
+                    const SizedBox(width: 12),
+                    Icon(Icons.category, size: 14, color: categoryColor),
+                    const SizedBox(width: 4),
+                    Text(
+                      jadwal.kategori,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: categoryColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -414,7 +509,7 @@ class _HomePageState extends State<HomePage> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: primaryBlueColor.withOpacity(0.1),
+              color: categoryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -422,7 +517,7 @@ class _HomePageState extends State<HomePage> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: primaryBlueColor,
+                color: categoryColor,
               ),
             ),
           ),

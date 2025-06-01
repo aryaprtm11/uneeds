@@ -185,24 +185,36 @@ class _LoadingScreenState extends State<LoadingScreen>
                         ],
                       ),
                       child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.school_outlined,
-                              size: 50,
-                              color: primaryBlueColor,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'U',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: primaryBlueColor,
-                              ),
-                            ),
-                          ],
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: Image.asset(
+                            'assets/gambar/logo.png',
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              // Fallback jika logo tidak ditemukan
+                              return Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.school_outlined,
+                                    size: 50,
+                                    color: primaryBlueColor,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'U',
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: primaryBlueColor,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -285,7 +297,7 @@ class _LoadingScreenState extends State<LoadingScreen>
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: Text(
-                  'Version 1.0.0',
+                  'Version 1.0.1',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.white.withOpacity(0.6),

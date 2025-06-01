@@ -75,6 +75,16 @@ class LocalNotificationService {
         enableVibration: true,
       );
 
+      // Create daily reminder channel
+      const AndroidNotificationChannel dailyReminderChannel = AndroidNotificationChannel(
+        'daily_reminders',
+        'Daily Reminders',
+        description: 'Daily reminder notifications',
+        importance: Importance.high,
+        playSound: true,
+        enableVibration: true,
+      );
+
       await _notificationsPlugin
           .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(channel);
@@ -82,6 +92,10 @@ class LocalNotificationService {
       await _notificationsPlugin
           .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(scheduledChannel);
+
+      await _notificationsPlugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(dailyReminderChannel);
 
       print('✅ Notification channels created successfully');
     } catch (e) {

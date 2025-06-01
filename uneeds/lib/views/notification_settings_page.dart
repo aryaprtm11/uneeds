@@ -128,7 +128,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE6F2FD),
+      backgroundColor: const Color(0xFFF8FBFF),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: Padding(
@@ -150,12 +150,20 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                   onTap: () {
                     Navigator.pop(context);
                   },
+                  borderRadius: BorderRadius.circular(20),
                   child: Container(
                     width: 40,
                     height: 40,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF2B4865),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2B4865),
                       shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF2B4865).withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: const Icon(
                       Icons.arrow_back,
@@ -196,7 +204,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Atur jenis notifikasi yang ingin Anda terima untuk membantu mengelola jadwal dan target Anda.',
+                      'Atur jenis notifikasi yang ingin Anda terima untuk membantu mengelola jadwal dan target Anda. Notifikasi akan otomatis terjadwal berdasarkan deadline dan jadwal kuliah.',
                       style: TextStyle(
                         fontSize: 14,
                         color: primaryBlueColor,
@@ -308,6 +316,16 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
             // Tombol Simpan
             Container(
               width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: primaryBlueColor.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
               child: ElevatedButton(
                 onPressed: _saveNotificationSettings,
                 style: ElevatedButton.styleFrom(
@@ -317,6 +335,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  elevation: 0,
                 ),
                 child: const Text(
                   'Simpan Pengaturan',

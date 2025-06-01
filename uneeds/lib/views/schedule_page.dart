@@ -45,6 +45,27 @@ class _SchedulePageState extends State<SchedulePage>
     'M': 'Minggu',
   };
 
+  // Helper function untuk membandingkan waktu dalam format "HH:mm"
+  int _compareTime(String time1, String time2) {
+    try {
+      final parts1 = time1.split(':');
+      final parts2 = time2.split(':');
+      
+      final hour1 = int.parse(parts1[0]);
+      final minute1 = int.parse(parts1[1]);
+      final hour2 = int.parse(parts2[0]);
+      final minute2 = int.parse(parts2[1]);
+      
+      final totalMinutes1 = hour1 * 60 + minute1;
+      final totalMinutes2 = hour2 * 60 + minute2;
+      
+      return totalMinutes1.compareTo(totalMinutes2);
+    } catch (e) {
+      print('Error comparing time: $e');
+      return 0;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -341,13 +362,14 @@ class _SchedulePageState extends State<SchedulePage>
                               );
                             } else if (snapshot.hasData &&
                                 snapshot.data!.isNotEmpty) {
-                              // Filter jadwal berdasarkan hari yang dipilih
+                              // Filter dan urutkan jadwal berdasarkan hari yang dipilih dan waktu mulai
                               final filteredJadwal =
                                   snapshot.data!
                                       .where(
                                         (jadwal) => jadwal.hari == selectedDay,
                                       )
-                                      .toList();
+                                      .toList()
+                                    ..sort((a, b) => _compareTime(a.waktuMulai, b.waktuMulai));
 
                               if (filteredJadwal.isEmpty) {
                                 return Center(

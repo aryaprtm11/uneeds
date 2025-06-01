@@ -351,103 +351,321 @@ class _TargetPageState extends State<TargetPage>
 
   Widget _buildTargetCard(TargetPersonal target) {
     final capaianList = _capaianTargets[target.id] ?? [];
+    final completedCount = capaianList.where((c) => c.status == 1).length;
+    final totalCount = capaianList.length;
+    final progress = totalCount > 0 ? completedCount / totalCount : 0.0;
+    final isCompleted = progress == 1.0 && totalCount > 0;
+
+    // Get color based on target type - selaras dengan tema aplikasi
+    Color getTargetColor(String type) {
+      switch (type.toLowerCase()) {
+        case 'beasiswa':
+          return const Color(0xFF2B4865); // Primary blue
+        case 'akademik':
+          return const Color(0xFF4A6D8C); // Lighter blue
+        case 'organisasi':
+          return const Color(0xFF2E7D32); // Green
+        case 'kepanitiaan':
+          return const Color(0xFF8B1919); // Red
+        case 'tugas':
+          return const Color(0xFF1976D2); // Blue
+        case 'lainnya':
+          return const Color(0xFF455A64); // Blue Grey
+        default:
+          return const Color(0xFF2B4865); // Default primary
+      }
+    }
+
+    final targetColor = getTargetColor(target.jenisTarget);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
+            color: targetColor.withOpacity(0.15),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+            spreadRadius: 1,
+          ),
+          BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
+        border: Border.all(
+          color: targetColor.withOpacity(0.1),
+          width: 1,
+        ),
       ),
       child: Stack(
         children: [
+          // Main content
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Header dengan icon dan info target
                 Row(
                   children: [
+                    // Icon container dengan gradient
                     Container(
-                      width: 48,
-                      height: 48,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF2B4865),
-                        shape: BoxShape.circle,
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            targetColor,
+                            targetColor.withOpacity(0.8),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: targetColor.withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Center(
                         child: Image.asset(
                           'assets/icons/${_getIconForTargetType(target.jenisTarget)}.png',
-                          width: 24,
-                          height: 24,
+                          width: 28,
+                          height: 28,
                           color: Colors.white,
                           errorBuilder: (context, error, stackTrace) {
                             return const Icon(
-                              Icons.star,
+                              Icons.flag_outlined,
                               color: Colors.white,
-                              size: 24,
+                              size: 28,
                             );
                           },
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 16),
+                    
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Nama target
                           Text(
                             target.namaTarget,
                             style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
                               color: Color(0xFF2B4865),
+                              letterSpacing: -0.5,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.calendar_today,
-                                size: 14,
-                                color: Colors.red,
+                          const SizedBox(height: 6),
+                          
+                          // Jenis target badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: targetColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: targetColor.withOpacity(0.3),
+                                width: 1,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Deadline: ${target.tanggalTarget}',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                            ),
+                            child: Text(
+                              target.jenisTarget,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: targetColor,
                               ),
-                            ],
+                            ),
                           ),
                         ],
                       ),
                     ),
                   ],
                 ),
+                
+                const SizedBox(height: 16),
+                
+                // Deadline info dengan styling menarik
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.red.withOpacity(0.1),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.schedule,
+                          size: 16,
+                          color: Colors.red,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Deadline',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.red,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            '${target.tanggalTarget} • ${target.waktuTarget}',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Progress section jika ada capaian
                 if (capaianList.isNotEmpty) ...[
                   const SizedBox(height: 16),
+                  
+                  // Progress indicator
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withOpacity(0.03),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Progress',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  '$completedCount/$totalCount',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: targetColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '(${(progress * 100).toInt()}%)',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        
+                        // Progress bar
+                        Container(
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Stack(
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                              FractionallySizedBox(
+                                widthFactor: progress,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        targetColor,
+                                        targetColor.withOpacity(0.8),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // Daftar capaian
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: capaianList.length,
                     itemBuilder: (context, index) {
                       final capaian = capaianList[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: capaian.status == 1 
+                              ? const Color(0xFF2E7D32).withOpacity(0.05)
+                              : Colors.grey.withOpacity(0.03),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: capaian.status == 1
+                                ? const Color(0xFF2E7D32).withOpacity(0.2)
+                                : Colors.grey.withOpacity(0.1),
+                            width: 1,
+                          ),
+                        ),
                         child: Row(
                           children: [
                             InkWell(
                               onTap: () => _toggleCapaian(capaian),
+                              borderRadius: BorderRadius.circular(12),
                               child: Container(
                                 width: 24,
                                 height: 24,
@@ -456,7 +674,7 @@ class _TargetPageState extends State<TargetPage>
                                   border: Border.all(
                                     color: capaian.status == 1
                                         ? const Color(0xFF2E7D32)
-                                        : const Color(0xFF2B4865),
+                                        : const Color(0xFF2B4865).withOpacity(0.5),
                                     width: 2,
                                   ),
                                   color: capaian.status == 1
@@ -466,7 +684,7 @@ class _TargetPageState extends State<TargetPage>
                                 child: capaian.status == 1
                                     ? const Icon(
                                         Icons.check,
-                                        size: 16,
+                                        size: 14,
                                         color: Colors.white,
                                       )
                                     : null,
@@ -479,11 +697,14 @@ class _TargetPageState extends State<TargetPage>
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: capaian.status == 1
-                                      ? Colors.grey
-                                      : Colors.black87,
+                                      ? Colors.grey[600]
+                                      : const Color(0xFF2B4865),
                                   decoration: capaian.status == 1
                                       ? TextDecoration.lineThrough
                                       : null,
+                                  fontWeight: capaian.status == 1
+                                      ? FontWeight.w400
+                                      : FontWeight.w500,
                                 ),
                               ),
                             ),
@@ -493,25 +714,86 @@ class _TargetPageState extends State<TargetPage>
                     },
                   ),
                 ],
+                
+                // Status badge di bagian bawah
+                if (isCompleted) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(
+                          Icons.check_circle,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          'Target Selesai',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
+          
+          // Edit button dengan styling lebih baik
           Positioned(
-            top: 8,
-            right: 8,
-            child: IconButton(
-              icon: const Icon(Icons.edit, color: Color(0xFF2B4865)),
-              onPressed: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EditTargetPage(target: target),
+            top: 12,
+            right: 12,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
-                );
-                if (result == true) {
-                  _refreshData();
-                }
-              },
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(10),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(10),
+                  onTap: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditTargetPage(target: target),
+                      ),
+                    );
+                    if (result == true) {
+                      _refreshData();
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(
+                      Icons.edit_outlined,
+                      color: targetColor,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -529,6 +811,8 @@ class _TargetPageState extends State<TargetPage>
         return 'organization';
       case 'kepanitiaan':
         return 'committee';
+      case 'tugas':
+        return 'task';
       case 'lainnya':
         return 'other';
       default:

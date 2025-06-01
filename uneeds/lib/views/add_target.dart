@@ -29,7 +29,8 @@ class _AddTargetPageState extends State<AddTargetPage> {
     'Akademik',
     'Organisasi',
     'Kepanitiaan',
-    'Lainnya'
+    'Tugas',
+    'Lainnya',
   ];
 
   @override

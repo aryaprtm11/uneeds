@@ -291,74 +291,243 @@ class DatabaseService {
 
   Future<void> generateSmartNotifications() async {
     try {
+      print('🔄 Starting smart notification generation...');
+      
       final targets = await getAllTargets();
       final schedules = await getJadwal();
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
-      final tomorrow = today.add(const Duration(days: 1));
+
+      print('📊 Found ${targets.length} targets and ${schedules.length} schedules');
 
       // Clear existing scheduled notifications
       await _localNotificationService.cancelAllNotifications();
+      print('🗑️ Cleared existing scheduled notifications');
 
-      // Schedule notifications untuk setiap target
+      int scheduledCount = 0;
+
+      // Schedule notifications untuk setiap target (ONLY ONCE PER TARGET)
       for (var target in targets) {
         try {
           final targetDate = DateTime.parse(target.tanggalTarget);
           final targetDateOnly = DateTime(targetDate.year, targetDate.month, targetDate.day);
           
-          // Schedule notification 1 hari sebelum deadline (jam 8 pagi)
-          final oneDayBefore = targetDateOnly.subtract(const Duration(days: 1));
-          if (oneDayBefore.isAfter(now)) {
-            final notificationTime = DateTime(oneDayBefore.year, oneDayBefore.month, oneDayBefore.day, 8, 0);
-            
-            await _localNotificationService.scheduleNotification(
-              id: 1000 + (target.id ?? 0),
-              title: 'Deadline Besok!',
-              body: 'Target "${target.namaTarget}" akan berakhir besok. Segera selesaikan!',
-              scheduledDate: notificationTime,
-              payload: 'target:${target.id}',
-              priority: NotificationPriority.high,
-            );
-            
-            print('📅 Scheduled notification for target: ${target.namaTarget} at $notificationTime');
+          print('🎯 Processing target: ${target.namaTarget} (deadline: ${targetDate.toString()})');
+          
+          // Cek apakah sudah ada notifikasi untuk target ini hari ini
+          final existingTargetNotifications = await _getExistingNotificationsForTarget(target.id ?? 0);
+          if (existingTargetNotifications.isNotEmpty) {
+            print('⏭️ Skipping target ${target.namaTarget} - notification already exists today');
+            continue;
           }
           
-          // Schedule notification pada hari deadline (jam 7 pagi)
-          if (targetDateOnly.isAfter(now)) {
+          // Schedule notification 1 hari sebelum deadline (jam 8 pagi) - SEKALI SAJA
+          final oneDayBefore = targetDateOnly.subtract(const Duration(days: 1));
+          if (oneDayBefore.isAfter(today) || (oneDayBefore.isAtSameMomentAs(today) && now.hour < 8)) {
+            final notificationTime = DateTime(oneDayBefore.year, oneDayBefore.month, oneDayBefore.day, 8, 0);
+            
+            if (notificationTime.isAfter(now)) {
+              // Save to database first
+              final notification = NotificationModel(
+                title: 'Deadline Besok!',
+                subtitle: 'Target akan berakhir besok',
+                description: 'Target "${target.namaTarget}" akan berakhir besok. Segera selesaikan!',
+                type: 'target',
+                relatedId: target.id,
+                priority: 'high',
+                createdAt: now,
+                isRead: false,
+              );
+              
+              final notificationId = await addNotificationOnly(notification);
+              
+              // Schedule HP notification SEKALI SAJA (bukan recurring)
+              await _localNotificationService.scheduleNotification(
+                id: notificationId,
+                title: notification.title,
+                body: notification.description,
+                scheduledDate: notificationTime,
+                payload: 'target:${target.id}',
+                priority: NotificationPriority.high,
+              );
+              
+              scheduledCount++;
+              print('✅ Scheduled ONE-TIME reminder for target: ${target.namaTarget} at $notificationTime');
+            }
+          }
+          
+          // Schedule notification pada hari deadline (jam 7 pagi) - SEKALI SAJA
+          if (targetDateOnly.isAfter(today) || (targetDateOnly.isAtSameMomentAs(today) && now.hour < 7)) {
             final deadlineNotificationTime = DateTime(targetDateOnly.year, targetDateOnly.month, targetDateOnly.day, 7, 0);
             
-            await _localNotificationService.scheduleNotification(
-              id: 2000 + (target.id ?? 0),
-              title: 'Deadline Hari Ini!',
-              body: 'Target "${target.namaTarget}" harus diselesaikan hari ini. Jangan sampai terlewat!',
-              scheduledDate: deadlineNotificationTime,
-              payload: 'target:${target.id}',
-              priority: NotificationPriority.high,
-            );
-            
-            print('📅 Scheduled deadline notification for: ${target.namaTarget} at $deadlineNotificationTime');
+            if (deadlineNotificationTime.isAfter(now)) {
+              // Save to database first
+              final notification = NotificationModel(
+                title: 'Deadline Hari Ini!',
+                subtitle: 'Target harus diselesaikan hari ini',
+                description: 'Target "${target.namaTarget}" harus diselesaikan hari ini. Jangan sampai terlewat!',
+                type: 'target',
+                relatedId: target.id,
+                priority: 'high',
+                createdAt: now,
+                isRead: false,
+              );
+              
+              final notificationId = await addNotificationOnly(notification);
+              
+              // Schedule HP notification SEKALI SAJA
+              await _localNotificationService.scheduleNotification(
+                id: notificationId,
+                title: notification.title,
+                body: notification.description,
+                scheduledDate: deadlineNotificationTime,
+                payload: 'target:${target.id}',
+                priority: NotificationPriority.high,
+              );
+              
+              scheduledCount++;
+              print('✅ Scheduled ONE-TIME deadline notification for: ${target.namaTarget} at $deadlineNotificationTime');
+            }
           }
 
         } catch (e) {
-          print('Error scheduling target notification: $e');
+          print('❌ Error scheduling target notification for ${target.namaTarget}: $e');
         }
       }
 
-      // Schedule daily reminder untuk jadwal kuliah (jam 6 pagi setiap hari)
-      await _localNotificationService.scheduleDailyReminder(
-        id: 9999,
-        title: 'Periksa Jadwal Hari Ini',
-        body: 'Jangan lupa cek jadwal kuliah hari ini di aplikasi Uneeds!',
-        hour: 6,
-        minute: 0,
-        payload: 'daily_schedule_check',
-      );
+      // Schedule notifications untuk jadwal kuliah hari ini dan besok (ONLY ONCE PER SCHEDULE)
+      for (var schedule in schedules) {
+        try {
+          final scheduleDay = schedule.hari.toLowerCase();
+          final scheduleStartTime = _parseTime(schedule.waktuMulai);
+          
+          print('📅 Processing schedule: ${schedule.matkul} (${schedule.hari} ${schedule.waktuMulai}-${schedule.waktuSelesai})');
+          
+          // Cek apakah sudah ada notifikasi untuk jadwal ini hari ini
+          final existingScheduleNotifications = await _getExistingNotificationsForSchedule(schedule.id ?? 0);
+          if (existingScheduleNotifications.isNotEmpty) {
+            print('⏭️ Skipping schedule ${schedule.matkul} - notification already exists today');
+            continue;
+          }
+          
+          // Check for today's schedule
+          if (_getDayString(now.weekday).toLowerCase() == scheduleDay) {
+            final todayScheduleTime = DateTime(today.year, today.month, today.day, scheduleStartTime.hour, scheduleStartTime.minute);
+            final reminderTime = todayScheduleTime.subtract(const Duration(minutes: 30)); // 30 menit sebelum
+            
+            if (reminderTime.isAfter(now)) {
+              // Save to database first
+              final notification = NotificationModel(
+                title: 'Kuliah Dimulai 30 Menit Lagi',
+                subtitle: '${schedule.matkul} - ${schedule.ruangan}',
+                description: '${schedule.matkul} akan dimulai jam ${schedule.waktuMulai} di ${schedule.ruangan}',
+                type: 'schedule',
+                relatedId: schedule.id,
+                priority: 'high',
+                createdAt: now,
+                isRead: false,
+              );
+              
+              final notificationId = await addNotificationOnly(notification);
+              
+              // Schedule HP notification SEKALI SAJA
+              await _localNotificationService.scheduleNotification(
+                id: notificationId,
+                title: notification.title,
+                body: notification.description,
+                scheduledDate: reminderTime,
+                payload: 'schedule:${schedule.id}',
+                priority: NotificationPriority.high,
+              );
+              
+              scheduledCount++;
+              print('✅ Scheduled ONE-TIME class reminder for: ${schedule.matkul} at $reminderTime');
+            }
+          }
 
-      print('✅ All smart notifications scheduled successfully');
+        } catch (e) {
+          print('❌ Error scheduling class notification for ${schedule.matkul}: $e');
+        }
+      }
+
+      // HAPUS daily reminder yang berulang - cukup buat notifikasi info sekali saja
+      try {
+        // Cek apakah sudah ada daily reminder hari ini
+        final existingDailyReminder = await _getExistingDailyReminder();
+        
+        if (existingDailyReminder.isEmpty) {
+          // Save ONE-TIME daily info notification to database (bukan recurring)
+          final dailyNotification = NotificationModel(
+            title: 'Jadwal Hari Ini 📅',
+            subtitle: 'Info jadwal dan target',
+            description: 'Anda memiliki ${schedules.length} jadwal dan ${targets.length} target. Semangat hari ini!',
+            type: 'daily',
+            relatedId: null,
+            priority: 'medium',
+            createdAt: now,
+            isRead: false,
+          );
+          
+          await addNotificationOnly(dailyNotification);
+          scheduledCount++;
+          print('✅ Added ONE-TIME daily info notification (no recurring)');
+        } else {
+          print('⏭️ Daily reminder already exists today - skipping');
+        }
+      } catch (e) {
+        print('❌ Error creating daily info: $e');
+      }
+
+      print('🎉 Smart notifications generation completed! Total scheduled: $scheduledCount notifications (NO SPAM!)');
 
     } catch (e) {
-      print('Error generating smart notifications: $e');
+      print('❌ Error generating smart notifications: $e');
     }
+  }
+
+  // Helper method untuk cek existing notifications untuk target
+  Future<List<NotificationModel>> _getExistingNotificationsForTarget(int targetId) async {
+    final db = await database;
+    final today = DateTime.now();
+    final todayStart = DateTime(today.year, today.month, today.day);
+    
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableNotifications,
+      where: 'type = ? AND related_id = ? AND created_at >= ?',
+      whereArgs: ['target', targetId, todayStart.toIso8601String()],
+    );
+    
+    return List.generate(maps.length, (i) => NotificationModel.fromMap(maps[i]));
+  }
+
+  // Helper method untuk cek existing notifications untuk schedule
+  Future<List<NotificationModel>> _getExistingNotificationsForSchedule(int scheduleId) async {
+    final db = await database;
+    final today = DateTime.now();
+    final todayStart = DateTime(today.year, today.month, today.day);
+    
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableNotifications,
+      where: 'type = ? AND related_id = ? AND created_at >= ?',
+      whereArgs: ['schedule', scheduleId, todayStart.toIso8601String()],
+    );
+    
+    return List.generate(maps.length, (i) => NotificationModel.fromMap(maps[i]));
+  }
+
+  // Helper method untuk cek existing daily reminder hari ini
+  Future<List<NotificationModel>> _getExistingDailyReminder() async {
+    final db = await database;
+    final today = DateTime.now();
+    final todayStart = DateTime(today.year, today.month, today.day);
+    
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableNotifications,
+      where: 'type = ? AND created_at >= ?',
+      whereArgs: ['daily', todayStart.toIso8601String()],
+    );
+    
+    return List.generate(maps.length, (i) => NotificationModel.fromMap(maps[i]));
   }
 
   String _getDayString(int weekday) {
@@ -716,6 +885,49 @@ class DatabaseService {
     }
   }
 
-  // Hapus stub insertCatatan yang lama jika tidak digunakan/sudah diganti addNote
-  // insertCatatan(String teks, String? path) {} --> Dihapus karena ada addNote
+  Future<bool> deleteTargetPersonal(int id) async {
+    try {
+      final db = await database;
+      
+      // Hapus semua capaian yang terkait dengan target ini
+      await db.delete(
+        tableCapaian,
+        where: 'id_target = ?',
+        whereArgs: [id],
+      );
+      
+      // Hapus target personal
+      final count = await db.delete(
+        tableTargetPersonal,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+      
+      return count > 0;
+    } catch (e) {
+      print('Error deleting target personal: $e');
+      return false;
+    }
+  }
+
+  // Helper method untuk add notification tanpa trigger HP notification (sudah dijadwalkan)
+  Future<int> addNotificationOnly(NotificationModel notification) async {
+    final db = await database;
+    final id = await db.insert(tableNotifications, notification.toMap());
+    print('💾 Saved notification to database with ID: $id');
+    return id;
+  }
+  
+  // Helper method untuk parse waktu string ke DateTime time components
+  DateTime _parseTime(String timeString) {
+    try {
+      final parts = timeString.split(':');
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+      return DateTime(2024, 1, 1, hour, minute); // Dummy date, we only care about time
+    } catch (e) {
+      print('Error parsing time $timeString: $e');
+      return DateTime(2024, 1, 1, 8, 0); // Default to 8:00 AM
+    }
+  }
 }

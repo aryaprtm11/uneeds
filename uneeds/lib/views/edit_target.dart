@@ -32,6 +32,7 @@ class _EditTargetPageState extends State<EditTargetPage> {
     'Akademik',
     'Organisasi',
     'Kepanitiaan',
+    'Tugas',
     'Lainnya',
   ];
 
@@ -478,86 +479,212 @@ class _EditTargetPageState extends State<EditTargetPage> {
                 ),
               ),
 
-              // Simpan Button
-              Container(
-                width: double.infinity,
-                height: 56,
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF2E7D32).withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: ElevatedButton.icon(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      try {
-                        // Update target
-                        bool success = await _databaseService
-                            .updateTargetPersonal(
-                              widget.target.id!,
-                              _namaTargetController.text,
-                              _selectedJenisTarget,
-                              _deadlineController.text,
-                              _timeController.text,
-                            );
+              // Row Tombol Hapus dan Simpan
+              Row(
+                children: [
+                  // Tombol Hapus
+                  Expanded(
+                    child: Container(
+                      height: 56,
+                      margin: const EdgeInsets.only(right: 8, bottom: 20),
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.red.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          // Tampilkan dialog konfirmasi hapus
+                          final bool? confirmDelete = await showDialog<bool>(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                title: const Text(
+                                  'Hapus Target',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF2B4865),
+                                  ),
+                                ),
+                                content: Text(
+                                  'Apakah Anda yakin ingin menghapus target "${widget.target.namaTarget}"? Tindakan ini tidak dapat dibatalkan.',
+                                  style: TextStyle(
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.of(context).pop(false),
+                                    child: Text(
+                                      'Batal',
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () => Navigator.of(context).pop(true),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Hapus',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
 
-                        if (success) {
-                          // Hapus semua capaian lama
-                          final oldCapaian = await _databaseService
-                              .getCapaianTargetPersonal(widget.target.id!);
-                          for (var capaian in oldCapaian) {
-                            await _databaseService.deleteCapaian(capaian.id!);
-                          }
+                          if (confirmDelete == true) {
+                            try {
+                              // Hapus semua capaian target terlebih dahulu
+                              final capaianList = await _databaseService
+                                  .getCapaianTargetPersonal(widget.target.id!);
+                              for (var capaian in capaianList) {
+                                await _databaseService.deleteCapaian(capaian.id!);
+                              }
 
-                          // Tambah ulang capaian dari form
-                          for (var controller in _listControllers) {
-                            if (controller.text.isNotEmpty) {
-                              await _databaseService.addCapaianTarget(
-                                widget.target.id!,
-                                controller.text,
-                                0, // status belum selesai
+                              // Hapus target
+                              bool success = await _databaseService
+                                  .deleteTargetPersonal(widget.target.id!);
+
+                              if (success) {
+                                Fluttertoast.showToast(
+                                  msg: 'Target berhasil dihapus',
+                                  backgroundColor: Colors.red,
+                                );
+                                Navigator.pop(context, true);
+                              } else {
+                                Fluttertoast.showToast(
+                                  msg: 'Gagal menghapus target',
+                                  backgroundColor: Colors.red,
+                                );
+                              }
+                            } catch (e) {
+                              print('Error deleting target: $e');
+                              Fluttertoast.showToast(
+                                msg: 'Terjadi kesalahan saat menghapus target',
+                                backgroundColor: Colors.red,
                               );
                             }
                           }
+                        },
+                        icon: const Icon(Icons.delete_outline, color: Colors.white),
+                        label: const Text(
+                          'Hapus',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Tombol Simpan
+                  Expanded(
+                    child: Container(
+                      height: 56,
+                      margin: const EdgeInsets.only(left: 8, bottom: 20),
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF2E7D32).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          if (_formKey.currentState!.validate()) {
+                            try {
+                              // Update target
+                              bool success = await _databaseService
+                                  .updateTargetPersonal(
+                                    widget.target.id!,
+                                    _namaTargetController.text,
+                                    _selectedJenisTarget,
+                                    _deadlineController.text,
+                                    _timeController.text,
+                                  );
 
-                          Fluttertoast.showToast(
-                            msg: 'Target berhasil diperbarui',
-                          );
-                          Navigator.pop(context, true);
-                        } else {
-                          Fluttertoast.showToast(
-                            msg: 'Gagal memperbarui target',
-                          );
-                        }
-                      } catch (e) {
-                        print('Error updating target: $e');
-                        Fluttertoast.showToast(
-                          msg: 'Terjadi kesalahan saat memperbarui target',
-                        );
-                      }
-                    }
-                  },
-                  icon: const Icon(Icons.save_outlined, color: Colors.white),
-                  label: const Text(
-                    'Simpan Target',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                              if (success) {
+                                // Hapus semua capaian lama
+                                final oldCapaian = await _databaseService
+                                    .getCapaianTargetPersonal(widget.target.id!);
+                                for (var capaian in oldCapaian) {
+                                  await _databaseService.deleteCapaian(capaian.id!);
+                                }
+
+                                // Tambah ulang capaian dari form
+                                for (var controller in _listControllers) {
+                                  if (controller.text.isNotEmpty) {
+                                    await _databaseService.addCapaianTarget(
+                                      widget.target.id!,
+                                      controller.text,
+                                      0, // status belum selesai
+                                    );
+                                  }
+                                }
+
+                                Fluttertoast.showToast(
+                                  msg: 'Target berhasil diperbarui',
+                                );
+                                Navigator.pop(context, true);
+                              } else {
+                                Fluttertoast.showToast(
+                                  msg: 'Gagal memperbarui target',
+                                );
+                              }
+                            } catch (e) {
+                              print('Error updating target: $e');
+                              Fluttertoast.showToast(
+                                msg: 'Terjadi kesalahan saat memperbarui target',
+                              );
+                            }
+                          }
+                        },
+                        icon: const Icon(Icons.save_outlined, color: Colors.white),
+                        label: const Text(
+                          'Simpan',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2E7D32),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2E7D32),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
+                ],
               ),
             ],
           ),
