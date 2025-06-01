@@ -309,7 +309,18 @@ class _NotePageState extends State<NotePage> {
                               ),
                             ),
                             FilledButton.icon(
-                              onPressed: _showAddOptionsPopup,
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const TambahCatatanPage(),
+                                  ),
+                                ).then((result) {
+                                  if (result == true && mounted) {
+                                    _refreshNotes();
+                                  }
+                                });
+                              },
                               icon: const Icon(
                                 Icons.add_circle_outline,
                                 size: 22,

@@ -257,7 +257,14 @@ class _SchedulePageState extends State<SchedulePage>
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: ElevatedButton.icon(
-                              onPressed: _showAddOptionsPopup,
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const AddSchedulePage(),
+                                  ),
+                                );
+                              },
                               icon: const Icon(
                                 Icons.add_circle_outline,
                                 color: Colors.white,

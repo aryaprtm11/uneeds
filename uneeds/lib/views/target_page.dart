@@ -285,18 +285,16 @@ class _TargetPageState extends State<TargetPage>
                   'Tambah Target',
                   Icons.flag_rounded,
                   const Color(0xFFFF6B6B),
-                  () {
-                    Navigator.pop(context);
-                    Navigator.push(
+                  () async {
+                    final result = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const AddTargetPage(),
                       ),
-                    ).then((result) {
-                      if (result == true) {
-                        _refreshData();
-                      }
-                    });
+                    );
+                    if (result == true) {
+                      _refreshData();
+                    }
                   },
                 ),
               ],
@@ -577,7 +575,17 @@ class _TargetPageState extends State<TargetPage>
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: ElevatedButton.icon(
-                                    onPressed: _showAddOptionsPopup,
+                                    onPressed: () async {
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => const AddTargetPage(),
+                                        ),
+                                      );
+                                      if (result == true) {
+                                        _refreshData();
+                                      }
+                                    },
                                     icon: const Icon(
                                       Icons.add_circle_outline,
                                       color: Colors.white,

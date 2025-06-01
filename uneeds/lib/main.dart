@@ -6,9 +6,8 @@ import 'package:intl/date_symbol_data_local.dart';
 // Import file konfigurasi Firebase Anda
 import 'firebase_options.dart';
 
-// Import halaman-halaman Anda
-import 'package:uneeds/views/onboarding.dart';
-import 'package:uneeds/views/home_page.dart';
+// Import halaman loading screen
+import 'package:uneeds/views/loading_screen.dart';
 
 // Import service notifikasi
 import 'package:uneeds/services/local_notification_service.dart';
@@ -43,38 +42,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Welcome to Uneeds!',
+      title: 'Uneeds - Manage Your Academic Life',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1F4D70)),
+        fontFamily: 'Inter',
+        useMaterial3: true,
       ),
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          // Tampilkan loading saat cek status login
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          // Tampilkan error jika terjadi error
-          if (snapshot.hasError) {
-            return const Scaffold(
-              body: Center(
-                child: Text('Terjadi kesalahan. Silakan coba lagi.'),
-              ),
-            );
-          }
-
-          // Jika user sudah login, tampilkan HomeView
-          if (snapshot.hasData) {
-            return const HomePage();
-          }
-
-          // Jika user belum login, tampilkan OnboardingView
-          return const OnboardingView();
-        },
-      ),
+      // Langsung menampilkan LoadingScreen
+      home: const LoadingScreen(),
     );
   }
 }
