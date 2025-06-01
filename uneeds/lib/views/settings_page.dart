@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uneeds/views/profile_edit.dart';
+import 'package:uneeds/views/onboarding.dart';
 
 class _MenuItem extends StatelessWidget {
   final IconData icon;
@@ -51,6 +53,83 @@ class _SettingPageState extends State<SettingPage> {
       email = prefs.getString('email') ?? 'uneedsapp@gmail.com';
       phone = prefs.getString('phone') ?? '08123456789';
     });
+  }
+
+  // Fungsi untuk logout dengan konfirmasi
+  Future<void> _showLogoutDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Konfirmasi Logout',
+            style: TextStyle(
+              color: Color(0xFF2B4865),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: const Text(
+            'Apakah Anda yakin ingin keluar dari aplikasi?',
+            style: TextStyle(fontSize: 16),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text(
+                'Batal',
+                style: TextStyle(color: Colors.grey),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text(
+                'Logout',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _performLogout();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Fungsi untuk melakukan logout
+  Future<void> _performLogout() async {
+    try {
+      // Logout dari Firebase Auth
+      await FirebaseAuth.instance.signOut();
+      
+      // Hapus data yang tersimpan di SharedPreferences jika diperlukan
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+
+      // Navigasi ke halaman onboarding dan hapus semua route sebelumnya
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const OnboardingView()),
+          (Route<dynamic> route) => false,
+        );
+      }
+    } catch (e) {
+      // Jika terjadi error, tampilkan snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal logout: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -154,6 +233,37 @@ class _SettingPageState extends State<SettingPage> {
               onTap: () {
                 // untuk kebijakan privasi
               },
+            ),
+            const SizedBox(height: 20),
+            // Tombol Logout
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              child: ElevatedButton(
+                onPressed: _showLogoutDialog,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.logout, size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      'Logout',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),

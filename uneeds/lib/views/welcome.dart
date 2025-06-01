@@ -179,13 +179,6 @@ class _WelcomeViewState extends State<WelcomeView> {
       }
       
       // Tampilkan pesan error yang lebih detil
-      String errorMessage = "Gagal masuk: $error";
-      if (error.toString().contains("ApiException: 10")) {
-        errorMessage = "Gagal verifikasi SHA1 fingerprint. Pastikan fingerprint sudah terdaftar di Firebase Console.";
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
     } finally {
       setState(() {
         _isLoading = false;
